@@ -108,15 +108,7 @@ export default function MachinesPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-            {/* ปุ่มทดสอบการแจ้งเตือน Notification */}
-            <button
-              onClick={() => toast.error('🚨 ทดสอบการแจ้งเตือน Alarm สุขภาพระบบ!')}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl text-sm font-semibold border border-rose-500/40 transition-all duration-200 active:scale-95"
-            >
-              <span>🔔 ทดสอบยิง Notification</span>
-            </button>
-
+          <div className="flex items-center gap-2">
             <button
               onClick={fetchMachines}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 transition-all duration-200 active:scale-95"
