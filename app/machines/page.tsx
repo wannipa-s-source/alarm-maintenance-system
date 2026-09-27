@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { useRole } from '@/context/RoleContext';
 
 export default function MachinesPage() {
+  const { role, canEdit, canDelete } = useRole();
   const [machines, setMachines] = useState<any[]>([]);
   const [form, setForm] = useState({ machine_id: '', machine_name: '', machine_type: '', location: '', status: 'Stop' });
   const [errorMsg, setErrorMsg] = useState('');
@@ -22,6 +24,11 @@ export default function MachinesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+
+    if (!canEdit) {
+      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
+      return;
+    }
 
     if (!form.machine_id || !form.machine_name || !form.machine_type || !form.location) {
       setErrorMsg('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง');
@@ -48,11 +55,13 @@ export default function MachinesPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!canEdit) return;
     await supabase.from('machines').update({ status: newStatus }).eq('id', id);
     fetchMachines();
   };
 
   const handleDelete = async (id: string) => {
+    if (!canDelete) return;
     if (confirm('ยืนยันการลบเครื่องจักรนี้?')) {
       await supabase.from('machines').delete().eq('id', id);
       fetchMachines();
@@ -94,95 +103,102 @@ export default function MachinesPage() {
           </button>
         </div>
 
-        {/* ฟอร์มเพิ่มเครื่องจักร */}
-        <form onSubmit={handleSubmit} className="bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-blue-900/40 shadow-xl space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            <h2 className="text-lg font-bold text-slate-100 tracking-wide">เพิ่มเครื่องจักรใหม่เข้าสู่ระบบ</h2>
-          </div>
-
-          {errorMsg && (
-            <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-sm flex items-center gap-2">
-              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine ID *</label>
-              <input
-                type="text"
-                placeholder="เช่น MC-001"
-                value={form.machine_id}
-                onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
-                className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-              />
+        {/* ฟอร์มเพิ่มเครื่องจักร - แสดงเฉพาะเมื่อมีสิทธิ์ canEdit (Admin / Operator) */}
+        {canEdit ? (
+          <form onSubmit={handleSubmit} className="bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-blue-900/40 shadow-xl space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              <h2 className="text-lg font-bold text-slate-100 tracking-wide">เพิ่มเครื่องจักรใหม่เข้าสู่ระบบ</h2>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine Name *</label>
-              <input
-                type="text"
-                placeholder="ชื่อเครื่องจักร"
-                value={form.machine_name}
-                onChange={(e) => setForm({ ...form, machine_name: e.target.value })}
-                className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-              />
+            {errorMsg && (
+              <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-sm flex items-center gap-2">
+                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine ID *</label>
+                <input
+                  type="text"
+                  placeholder="เช่น MC-001"
+                  value={form.machine_id}
+                  onChange={(e) => setForm({ ...form, machine_id: e.target.value })}
+                  className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine Name *</label>
+                <input
+                  type="text"
+                  placeholder="ชื่อเครื่องจักร"
+                  value={form.machine_name}
+                  onChange={(e) => setForm({ ...form, machine_name: e.target.value })}
+                  className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine Type *</label>
+                <input
+                  type="text"
+                  placeholder="ประเภทเครื่องจักร"
+                  value={form.machine_type}
+                  onChange={(e) => setForm({ ...form, machine_type: e.target.value })}
+                  className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Location *</label>
+                <input
+                  type="text"
+                  placeholder="ตำแหน่งติดตั้ง"
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Initial Status</label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                >
+                  <option value="Running" className="bg-[#0d1322] text-emerald-400">Running</option>
+                  <option value="Stop" className="bg-[#0d1322] text-slate-300">Stop</option>
+                  <option value="Alarm" className="bg-[#0d1322] text-rose-400">Alarm</option>
+                  <option value="Maintenance" className="bg-[#0d1322] text-purple-400">Maintenance</option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Machine Type *</label>
-              <input
-                type="text"
-                placeholder="ประเภทเครื่องจักร"
-                value={form.machine_type}
-                onChange={(e) => setForm({ ...form, machine_type: e.target.value })}
-                className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Location *</label>
-              <input
-                type="text"
-                placeholder="ตำแหน่งติดตั้ง"
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Initial Status</label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="w-full bg-[#0d1322] border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-[0_0_20px_rgba(37,99,235,0.3)] active:scale-95 disabled:opacity-50"
               >
-                <option value="Running" className="bg-[#0d1322] text-emerald-400">Running</option>
-                <option value="Stop" className="bg-[#0d1322] text-slate-300">Stop</option>
-                <option value="Alarm" className="bg-[#0d1322] text-rose-400">Alarm</option>
-                <option value="Maintenance" className="bg-[#0d1322] text-purple-400">Maintenance</option>
-              </select>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูลเครื่องจักร'}</span>
+              </button>
             </div>
+          </form>
+        ) : (
+          <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-2xl text-amber-400/90 text-sm flex items-center gap-2">
+            <span>🔒</span>
+            <span>คุณกำลังใช้งานในโหมด <b>Viewer</b> (สามารถดูข้อมูลได้อย่างเดียว ไม่สามารถเพิ่มข้อมูลได้)</span>
           </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-[0_0_20px_rgba(37,99,235,0.3)] active:scale-95 disabled:opacity-50"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูลเครื่องจักร'}</span>
-            </button>
-          </div>
-        </form>
+        )}
 
         {/* ตารางแสดงรายการเครื่องจักร */}
         <div className="bg-[#111827]/80 backdrop-blur-md rounded-2xl border border-blue-900/40 shadow-xl overflow-hidden">
@@ -229,35 +245,55 @@ export default function MachinesPage() {
                         {m.location}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        <select
-                          value={m.status}
-                          onChange={(e) => handleStatusChange(m.id, e.target.value)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
+                        {/* ปรับแต่ง Dropdown Status ตามสิทธิ์ canEdit */}
+                        {canEdit ? (
+                          <select
+                            value={m.status}
+                            onChange={(e) => handleStatusChange(m.id, e.target.value)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
+                              m.status === 'Running'
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                                : m.status === 'Alarm'
+                                ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
+                                : m.status === 'Maintenance'
+                                ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
+                                : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                            }`}
+                          >
+                            <option value="Running" className="bg-[#0d1322] text-emerald-400">Running</option>
+                            <option value="Stop" className="bg-[#0d1322] text-slate-300">Stop</option>
+                            <option value="Alarm" className="bg-[#0d1322] text-rose-400">Alarm</option>
+                            <option value="Maintenance" className="bg-[#0d1322] text-purple-400">Maintenance</option>
+                          </select>
+                        ) : (
+                          <span className={`px-3 py-1.5 rounded-xl text-xs font-bold border inline-block ${
                             m.status === 'Running'
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                               : m.status === 'Alarm'
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20'
+                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
                               : m.status === 'Maintenance'
-                              ? 'bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20'
-                              : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                          }`}
-                        >
-                          <option value="Running" className="bg-[#0d1322] text-emerald-400">Running</option>
-                          <option value="Stop" className="bg-[#0d1322] text-slate-300">Stop</option>
-                          <option value="Alarm" className="bg-[#0d1322] text-rose-400">Alarm</option>
-                          <option value="Maintenance" className="bg-[#0d1322] text-purple-400">Maintenance</option>
-                        </select>
+                              ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                              : 'bg-slate-800 border-slate-700 text-slate-300'
+                          }`}>
+                            {m.status}
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        <button
-                          onClick={() => handleDelete(m.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          <span>ลบ</span>
-                        </button>
+                        {/* แสดงปุ่มลบเฉพาะ Role Admin (canDelete) */}
+                        {canDelete ? (
+                          <button
+                            onClick={() => handleDelete(m.id)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>ลบ</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-600 italic">ไม่มีสิทธิ์จัดการ</span>
+                        )}
                       </td>
                     </tr>
                   ))
