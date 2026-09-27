@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRole } from '@/context/RoleContext';
+import toast from 'react-hot-toast';
 
 export default function MachinesPage() {
   const { role, canEdit, canDelete } = useRole();
@@ -47,7 +48,9 @@ export default function MachinesPage() {
     const { error } = await supabase.from('machines').insert([form]);
     if (error) {
       setErrorMsg(error.message);
+      toast.error('เพิ่มเครื่องจักรไม่สำเร็จ: ' + error.message);
     } else {
+      toast.success(`เพิ่มเครื่องจักร ${form.machine_id} เข้าสู่ระบบเรียบร้อยแล้ว!`);
       setForm({ machine_id: '', machine_name: '', machine_type: '', location: '', status: 'Stop' });
       fetchMachines();
     }
@@ -56,15 +59,27 @@ export default function MachinesPage() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     if (!canEdit) return;
-    await supabase.from('machines').update({ status: newStatus }).eq('id', id);
-    fetchMachines();
+    const { error } = await supabase.from('machines').update({ status: newStatus }).eq('id', id);
+    if (!error) {
+      if (newStatus === 'Alarm') {
+        toast.error(`🚨 เครื่องจักรถูกเปลี่ยนสถานะเป็น ALARM!`, { duration: 4000 });
+      } else if (newStatus === 'Running') {
+        toast.success(`✅ เครื่องจักรกลับมาอยู่ในสถานะ Running แล้ว`, { duration: 4000 });
+      } else {
+        toast(`ℹ️ อัปเดตสถานะเครื่องจักรเป็น ${newStatus}`, { icon: '🔔' });
+      }
+      fetchMachines();
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!canDelete) return;
     if (confirm('ยืนยันการลบเครื่องจักรนี้?')) {
-      await supabase.from('machines').delete().eq('id', id);
-      fetchMachines();
+      const { error } = await supabase.from('machines').delete().eq('id', id);
+      if (!error) {
+        toast.success('ลบข้อมูลเครื่องจักรเรียบร้อยแล้ว');
+        fetchMachines();
+      }
     }
   };
 
@@ -92,15 +107,26 @@ export default function MachinesPage() {
               </p>
             </div>
           </div>
-          <button
-            onClick={fetchMachines}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 transition-all duration-200 active:scale-95"
-          >
-            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>รีเฟรชข้อมูล</span>
-          </button>
+          
+          <div className="flex flex-wrap items-center gap-2">
+            {/* ปุ่มทดสอบการแจ้งเตือน Notification */}
+            <button
+              onClick={() => toast.error('🚨 ทดสอบการแจ้งเตือน Alarm สุขภาพระบบ!')}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-xl text-sm font-semibold border border-rose-500/40 transition-all duration-200 active:scale-95"
+            >
+              <span>🔔 ทดสอบยิง Notification</span>
+            </button>
+
+            <button
+              onClick={fetchMachines}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 transition-all duration-200 active:scale-95"
+            >
+              <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>รีเฟรชข้อมูล</span>
+            </button>
+          </div>
         </div>
 
         {/* ฟอร์มเพิ่มเครื่องจักร - แสดงเฉพาะเมื่อมีสิทธิ์ canEdit (Admin / Operator) */}
@@ -245,7 +271,6 @@ export default function MachinesPage() {
                         {m.location}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        {/* ปรับแต่ง Dropdown Status ตามสิทธิ์ canEdit */}
                         {canEdit ? (
                           <select
                             value={m.status}
@@ -280,7 +305,6 @@ export default function MachinesPage() {
                         )}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        {/* แสดงปุ่มลบเฉพาะ Role Admin (canDelete) */}
                         {canDelete ? (
                           <button
                             onClick={() => handleDelete(m.id)}
