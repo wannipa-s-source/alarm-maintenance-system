@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 export default function MachinesPage() {
   const [machines, setMachines] = useState<any[]>([]);
@@ -22,7 +23,6 @@ export default function MachinesPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    // Input Validation: ห้ามว่าง
     if (!form.machine_id || !form.machine_name || !form.machine_type || !form.location) {
       setErrorMsg('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่อง');
       return;
@@ -30,7 +30,6 @@ export default function MachinesPage() {
 
     setSubmitting(true);
 
-    // เช็ค Machine ID ซ้ำ
     const { data: existing } = await supabase.from('machines').select('id').eq('machine_id', form.machine_id);
     if (existing && existing.length > 0) {
       setErrorMsg('Machine ID นี้มีอยู่ในระบบแล้ว');
@@ -62,13 +61,12 @@ export default function MachinesPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1d] text-slate-100 p-6 md:p-10 relative overflow-hidden font-sans">
-      {/* Background Neon Glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-blue-900/40 shadow-xl shadow-blue-950/20">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.2)]">
@@ -81,7 +79,7 @@ export default function MachinesPage() {
                 Machine Master
               </h1>
               <p className="text-sm text-slate-400 mt-0.5">
-                ระบบจัดการข้อมูลและทะเบียนเครื่องจักรในระบบ (Industrial Machine Registration)
+                คลิกที่รหัสเครื่องจักรเพื่อเข้าดูประวัติการซ่อมและ Alarm ย้อนหลัง (Machine History)
               </p>
             </div>
           </div>
@@ -192,7 +190,7 @@ export default function MachinesPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#0d1322] border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400">
-                  <th className="p-4">Machine ID</th>
+                  <th className="p-4">Machine ID (คลิกเพื่อดูประวัติ)</th>
                   <th className="p-4">Name</th>
                   <th className="p-4">Type</th>
                   <th className="p-4">Location</th>
@@ -210,8 +208,16 @@ export default function MachinesPage() {
                 ) : (
                   machines.map((m) => (
                     <tr key={m.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="p-4 font-mono font-bold text-cyan-400 whitespace-nowrap">
-                        {m.machine_id}
+                      <td className="p-4 whitespace-nowrap">
+                        <Link 
+                          href={`/machines/${m.id}`}
+                          className="inline-flex items-center gap-1.5 font-mono font-bold text-cyan-400 hover:text-cyan-300 hover:underline group"
+                        >
+                          <span>{m.machine_id}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 group-hover:bg-cyan-500/20">
+                            🔍 History
+                          </span>
+                        </Link>
                       </td>
                       <td className="p-4 font-semibold text-slate-200 min-w-[150px]">
                         {m.machine_name}
