@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alarm & Maintenance Management System
 
-## Getting Started
+## วัตถุประสงค์โครงการ
+ระบบบริหารจัดการสัญญาณแจ้งเตือน (Alarm) และงานซ่อมบำรุงเครื่องจักร (Maintenance) สำหรับโรงงานอุตสาหกรรม เพื่อติดตามสถานะและบันทึกประวัติการบำรุงรักษาอย่างเป็นระบบ
 
-First, run the development server:
+## Function หลักและ Technology ที่ใช้
+- **Function หลัก:**
+  - Authentication (ระบบเข้าสู่ระบบด้วย Supabase Auth)
+  - Dashboard สรุปจำนวนเครื่องจักร, Running/Stop, Alarm และ Maintenance
+  - Machine Master (จัดการข้อมูลเครื่องจักร)
+  - Alarm Records (แจ้งและติดตามเหตุการณ์ Alarm)
+  - Maintenance Records (บันทึกงานซ่อมบำรุง/แก้ไข)
+- **Technology:** Next.js (App Router), Tailwind CSS, Supabase (PostgreSQL), Vercel
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Database Structure (Supabase Schema)
+- `machines`: (id, machine_id, name, type, location, status, created_at)
+- `alarms`: (id, machine_id, code, description, cause, status, created_at)
+- `maintenance_records`: (id, machine_id, type, problem, action_taken, status, created_at)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## วิธีติดตั้งและใช้งาน (Local Setup)
+1. Clone Repository: `git clone <your-repo-url>`
+2. Install Dependencies: `npm install`
+3. ตั้งค่า `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL=<YOUR_SUPABASE_URL>`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_SUPABASE_ANON_KEY>`
+4. Run Project: `npm run dev`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercel URL
+https://alarm-maintenance-system-n9yovwo4i-wannipasakprom2547-7925.vercel.app
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## รายละเอียดการใช้ AI ในการพัฒนา
+ใช้น้อง AI ช่วยในทุกขั้นตอน:
+1. ออกแบบ Database Schema และสร้างตารางใน Supabase
+2. เจนเนอเรต Source Code หน้า UI แต่ละส่วนด้วย Next.js และ Tailwind CSS
+3. ช่วยวิเคราะห์และแก้ไข Build Errors / Environment Variables บน Vercel
+4. แนะนำวิธีตั้งค่า Authentication และเชื่อมต่อ API
