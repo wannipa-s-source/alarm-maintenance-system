@@ -5,6 +5,7 @@ import RoleSelector from "@/components/RoleSelector";
 import { Toaster } from "react-hot-toast";
 import NotificationListener from "@/components/NotificationListener";
 import { Providers } from "./providers"; // Import ตัวคลุมธีมเข้ามา
+import ThemeToggle from "@/components/ThemeToggle"; // 1. Import ปุ่มสลับธีมเข้ามา
 
 export const metadata: Metadata = {
   title: "Alarm & Maintenance System",
@@ -40,8 +41,11 @@ export default function RootLayout({
                 </span>
               </div>
 
-              {/* ส่วนสลับบทบาทผู้ใช้งาน (Role Switcher) */}
-              <RoleSelector />
+              {/* ด้านขวา: ปุ่มสลับธีม (ThemeToggle) + ส่วนสลับบทบาทผู้ใช้งาน (Role Selector) */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <ThemeToggle />
+                <RoleSelector />
+              </div>
             </header>
 
             {/* เนื้อหาหน้าเว็บแต่ละหน้า */}
