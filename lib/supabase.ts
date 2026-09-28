@@ -1,7 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabaseConfig';
 
-// ใส่ Supabase URL และ Anon Key ที่ถูกต้องจาก Dashboard ของ Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zbdfqkobiluottrvtytk.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_4e6rcFCsSGm29BfQR7Lx5g_wzJZDgCu';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+/**
+ * Supabase client ฝั่ง Browser
+ * - ใช้ cookie เก็บ session (ไม่ใช่ localStorage) เพื่อให้ proxy.ts บน server อ่านสถานะการล็อกอินได้
+ */
+export const supabase = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);

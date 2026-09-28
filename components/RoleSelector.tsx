@@ -11,12 +11,12 @@ export default function RoleSelector() {
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
 
-  /** ออกจากระบบ แล้วพาผู้ใช้ไปหน้า Register */
+  /** ออกจากระบบ แล้วพาผู้ใช้กลับไปหน้า Login เพื่อเข้าสู่ระบบใหม่ */
   const handleLogout = async () => {
     setLoggingOut(true);
 
     try {
-      // ล้าง session ของ Supabase Auth (ถ้าเคยเข้าสู่ระบบไว้)
+      // ล้าง session ของ Supabase Auth อย่างสมบูรณ์
       await supabase.auth.signOut();
     } catch {
       // ข้ามไป เพราะระบบควบคุมหน้าจอด้วย RoleContext เป็นหลัก
@@ -26,7 +26,8 @@ export default function RoleSelector() {
     setRole('Viewer');
     setLoggingOut(false);
 
-    router.push('/register');
+    // ล้าง cache ของ Next.js เพื่อไม่ให้เห็นข้อมูลของผู้ใช้เดิมค้างอยู่
+    router.replace('/login');
     router.refresh();
   };
 

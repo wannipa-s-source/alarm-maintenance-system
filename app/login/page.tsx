@@ -1,16 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { LoaderCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="relative min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#0a0f1d] p-4 transition-colors duration-300">
+          <LoaderCircle className="w-8 h-8 animate-spin text-blue-600 dark:text-cyan-400" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // path ที่ถูกพาไปก่อนถูกบังคับให้ล็อกอิน (เช่น /machines) ถ้าไม่มีจะกลับไปหน้าแรก
+  const nextPath = searchParams.get('next');
+  const safeNext = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/';
+
+  // ถ้ามี session อยู่แล้ว ไม่ต้องเข้าสู่ระบบซ้ำ
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) {
+        router.replace(safeNext);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [router, safeNext]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +59,8 @@ export default function LoginPage() {
       setErrorMsg(error.message);
       setLoading(false);
     } else {
-      router.push('/dashboard');
+      router.replace(safeNext);
+      router.refresh();
     }
   };
 

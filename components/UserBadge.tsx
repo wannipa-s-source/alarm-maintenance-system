@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { HardHat } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import type { UserRole } from '@/context/RoleContext';
+import { supabase } from '@/lib/supabase';
 
 const roleStyle: Record<UserRole, { label: string; badge: string; dot: string }> = {
   Admin: {
@@ -22,8 +24,14 @@ const roleStyle: Record<UserRole, { label: string; badge: string; dot: string }>
   },
 };
 
-/** ชื่อผู้ใช้ที่แสดงบนแถบเมนู (ตอนนี้ระบบยังไม่ได้เชื่อมกับ Login จริง) */
-const displayName = 'ผู้ใช้งานระบบ';
+/** ชื่อสำรองกรณียังไม่ได้โหลดข้อมูลผู้ใช้ */
+const fallbackName = 'ผู้ใช้งานระบบ';
+
+/** ตัดชื่อให้สั้นลง เช่น somchai@factory.com => somchai@factory... */
+function shortenEmail(email: string): string {
+  if (email.length <= 22) return email;
+  return `${email.slice(0, 20)}...`;
+}
 
 /**
  * โปรไฟล์ผู้ใช้งาน: ชื่อ + บทบาท
@@ -32,6 +40,25 @@ const displayName = 'ผู้ใช้งานระบบ';
 export default function UserBadge() {
   const { role } = useRole();
   const meta = roleStyle[role];
+  const [displayName, setDisplayName] = useState(fallbackName);
+
+  // ดึงชื่อจริงจาก session ที่ล็อกอินไว้
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (!active) return;
+      const user = data.user;
+      if (!user) return;
+
+      const fullName = typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name.trim() : '';
+      setDisplayName(fullName || shortenEmail(user.email ?? fallbackName));
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-700/70">

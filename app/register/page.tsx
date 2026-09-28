@@ -39,7 +39,7 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -53,18 +53,15 @@ export default function RegisterPage() {
       return;
     }
 
-    // กรณีต้องยืนยันอีเมลก่อนจึงจะเข้าสู่ระบบได้ ให้ผู้ใช้ไปหน้า Login
-    if (!data.session) {
-      setStatus({
-        type: 'success',
-        message: 'สมัครสมาชิกเรียบร้อยแล้ว กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี แล้วเข้าสู่ระบบ',
-      });
-      setLoading(false);
-      return;
-    }
-
-    router.push('/');
-    router.refresh();
+    // หลังสมัครสมาชิกแล้วต้องเข้าสู่ระบบใหม่เสมอ
+    setStatus({
+      type: 'success',
+      message: 'สมัครสมาชิกเรียบร้อยแล้ว กรุณาเข้าสู่ระบบเพื่อเริ่มใช้งาน',
+    });
+    setLoading(false);
+    setTimeout(() => {
+      router.replace('/login');
+    }, 1200);
   };
 
   return (
