@@ -10,6 +10,10 @@ export default function AlarmsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Search & Filter States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -49,6 +53,25 @@ export default function AlarmsPage() {
     await supabase.from('alarms').update({ status: newStatus }).eq('id', id);
     fetchData();
   };
+
+  // ฟังก์ชันรีเซ็ตตัวกรอง
+  const handleResetFilter = () => {
+    setSearchTerm('');
+    setStatusFilter('All');
+  };
+
+  // กรองข้อมูล Alarms ตามคำค้นหาและสถานะ
+  const filteredAlarms = alarms.filter((a) => {
+    const machineIdStr = a.machines?.machine_id?.toLowerCase() || '';
+    const descriptionStr = a.alarm_description?.toLowerCase() || '';
+    const codeStr = a.alarm_code?.toLowerCase() || '';
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch = machineIdStr.includes(search) || descriptionStr.includes(search) || codeStr.includes(search);
+    const matchesStatus = statusFilter === 'All' || a.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 p-6 md:p-10 relative overflow-hidden font-sans transition-colors duration-300">
@@ -167,6 +190,48 @@ export default function AlarmsPage() {
           </div>
         </form>
 
+        {/* ส่วนค้นหา และ กรองสถานะ (Search & Filter Section) */}
+        <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="w-full md:flex-1 relative">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="ค้นหาด้วยรหัสเครื่องจักร (Machine ID) หรือรายละเอียด Alarm..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+            />
+          </div>
+
+          <div className="w-full md:w-auto flex items-center gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full md:w-48 bg-slate-100 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition cursor-pointer"
+            >
+              <option value="All">ทุกสถานะ (All Status)</option>
+              <option value="Open">Open (Active)</option>
+              <option value="In Progress">In Progress (Pending)</option>
+              <option value="Closed">Closed</option>
+            </select>
+
+            <button
+              onClick={handleResetFilter}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700 transition-all duration-200 active:scale-95 whitespace-nowrap"
+              title="ล้างตัวกรอง"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>รีเซ็ต</span>
+            </button>
+          </div>
+        </div>
+
         {/* ตาราง Alarm */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -182,14 +247,14 @@ export default function AlarmsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
-                {alarms.length === 0 ? (
+                {filteredAlarms.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-slate-500">
-                      ไม่พบประวัติการเกิด Alarm ในระบบ
+                      ไม่พบประวัติการเกิด Alarm ที่ตรงกับเงื่อนไขการค้นหา
                     </td>
                   </tr>
                 ) : (
-                  alarms.map((a) => (
+                  filteredAlarms.map((a) => (
                     <tr key={a.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="p-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {new Date(a.created_at).toLocaleString('th-TH')}
