@@ -55,12 +55,14 @@ export default function MaintenancePage() {
     fetchData();
   };
 
+  // ฟังก์ชันรีเซ็ตตัวกรองทั้งหมด
   const handleResetFilter = () => {
     setSearchTerm('');
     setTypeFilter('All');
     setStatusFilter('All');
   };
 
+  // กรองข้อมูล Records ตามคำค้นหา, ประเภทงานซ่อม และสถานะ
   const filteredRecords = records.filter((r) => {
     const machineIdStr = r.machines?.machine_id?.toLowerCase() || '';
     const machineNameStr = r.machines?.machine_name?.toLowerCase() || '';
@@ -82,6 +84,7 @@ export default function MaintenancePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 p-6 md:p-10 relative overflow-hidden font-sans transition-colors duration-300">
+      {/* Background Neon Glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -198,8 +201,10 @@ export default function MaintenancePage() {
           </div>
         </form>
 
-        {/* ส่วนค้นหา และ ตัวกรอง */}
+        {/* ส่วนค้นหา และ ตัวกรอง (Search & Filters Section) */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          
+          {/* ช่องค้นหา */}
           <div className="w-full md:flex-1 relative">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +220,9 @@ export default function MaintenancePage() {
             />
           </div>
 
+          {/* ตัวกรองและปุ่มรีเซ็ต */}
           <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3">
+            {/* กรองประเภทงานซ่อม */}
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -227,7 +234,7 @@ export default function MaintenancePage() {
               <option value="Breakdown">Breakdown</option>
             </select>
 
-            {/* เพิ่ม Waiting Part ใน Dropdown กรองสถานะ */}
+            {/* กรองสถานะ */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -236,13 +243,14 @@ export default function MaintenancePage() {
               <option value="All">ทุกสถานะ (All Status)</option>
               <option value="Pending">Pending</option>
               <option value="In Progress">In Progress</option>
-              <option value="Waiting Part">Waiting Part</option>
               <option value="Completed">Completed</option>
             </select>
 
+            {/* ปุ่มรีเซ็ต */}
             <button
               onClick={handleResetFilter}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700 transition-all duration-200 active:scale-95 whitespace-nowrap"
+              title="ล้างตัวกรอง"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -294,7 +302,6 @@ export default function MaintenancePage() {
                         {r.action_taken || '-'}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        {/* ปรับสีและตัวเลือกใน Dropdown ตาราง */}
                         <select
                           value={r.status}
                           onChange={(e) => handleStatusChange(r.id, e.target.value)}
@@ -303,14 +310,11 @@ export default function MaintenancePage() {
                               ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
                               : r.status === 'In Progress'
                               ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-                              : r.status === 'Waiting Part'
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20'
                               : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
                           }`}
                         >
                           <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
                           <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
-                          <option value="Waiting Part" className="bg-slate-100 dark:bg-[#0d1322] text-rose-600 dark:text-rose-400">Waiting Part</option>
                           <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
                         </select>
                       </td>
