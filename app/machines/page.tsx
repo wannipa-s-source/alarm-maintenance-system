@@ -397,20 +397,20 @@ export default function MachinesPage() {
 
                   <div className="pt-1 flex items-center justify-between">
                     <span className="text-xs text-slate-500 dark:text-slate-400">สถานะ:</span>
-                    {canEditMachines ? (
-                      <select
-                        value={m.status}
-                        onChange={(e) => handleStatusChange(m.id, e.target.value)}
-                        className="px-2.5 py-1 rounded-lg text-xs font-bold border focus:outline-none bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700"
-                      >
-                        <option value="Running">Running</option>
-                        <option value="Stop">Stop</option>
-                        <option value="Alarm">Alarm</option>
-                        <option value="Maintenance">Maintenance</option>
-                      </select>
-                    ) : (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{m.status}</span>
-                    )}
+                    <select
+                      value={m.status}
+                      onChange={(e) => handleStatusChange(m.id, e.target.value)}
+                      disabled={!canEditMachines}
+                      aria-label={`สถานะเครื่องจักร ${m.machine_id}`}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border focus:outline-none bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 ${
+                        canEditMachines ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
+                      }`}
+                    >
+                      <option value="Running">Running</option>
+                      <option value="Stop">Stop</option>
+                      <option value="Alarm">Alarm</option>
+                      <option value="Maintenance">Maintenance</option>
+                    </select>
                   </div>
                 </div>
               ))
@@ -461,30 +461,28 @@ export default function MachinesPage() {
                         {m.location}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        {canEditMachines ? (
-                          <select
-                            value={m.status}
-                            onChange={(e) => handleStatusChange(m.id, e.target.value)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
-                              m.status === 'Running'
-                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-                                : m.status === 'Alarm'
-                                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                                : m.status === 'Maintenance'
-                                ? 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400'
-                                : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <option value="Running">Running</option>
-                            <option value="Stop">Stop</option>
-                            <option value="Alarm">Alarm</option>
-                            <option value="Maintenance">Maintenance</option>
-                          </select>
-                        ) : (
-                          <span className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700">
-                            {m.status}
-                          </span>
-                        )}
+                        <select
+                          value={m.status}
+                          onChange={(e) => handleStatusChange(m.id, e.target.value)}
+                          disabled={!canEditMachines}
+                          aria-label={`สถานะเครื่องจักร ${m.machine_id}`}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all ${
+                            canEditMachines ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
+                          } ${
+                            m.status === 'Running'
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                              : m.status === 'Alarm'
+                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                              : m.status === 'Maintenance'
+                              ? 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400'
+                              : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <option value="Running">Running</option>
+                          <option value="Stop">Stop</option>
+                          <option value="Alarm">Alarm</option>
+                          <option value="Maintenance">Maintenance</option>
+                        </select>
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
                         {canDeleteMachines ? (

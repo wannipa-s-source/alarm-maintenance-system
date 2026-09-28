@@ -341,35 +341,25 @@ export default function MaintenancePage() {
                         {r.action_taken || '-'}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        {canEditMaintenance ? (
-                          <select
-                            value={r.status}
-                            onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
-                              r.status === 'Pending'
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-                                : r.status === 'In Progress'
-                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                            }`}
-                          >
-                            <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
-                            <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
-                            <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
-                          </select>
-                        ) : (
-                          <span
-                            className={`inline-block px-3 py-1.5 rounded-xl text-xs font-bold border ${
-                              r.status === 'Pending'
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
-                                : r.status === 'In Progress'
-                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
-                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-                            }`}
-                          >
-                            {r.status}
-                          </span>
-                        )}
+                        <select
+                          value={r.status}
+                          onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                          disabled={!canEditMaintenance}
+                          aria-label={`สถานะงานซ่อมบำรุง ${r.id}`}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all ${
+                            canEditMaintenance ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
+                          } ${
+                            r.status === 'Pending'
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                              : r.status === 'In Progress'
+                              ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
+                              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
+                          <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
+                          <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
+                        </select>
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
                         {canDeleteMaintenance && (

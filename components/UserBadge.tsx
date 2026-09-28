@@ -48,6 +48,7 @@ export default function UserBadge() {
               <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
             )}
             {meta.label}
+            <span className="font-mono opacity-70">({role})</span>
           </span>
         )}
       </div>

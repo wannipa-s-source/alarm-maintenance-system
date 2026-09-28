@@ -119,6 +119,46 @@ as $$
   select public.current_user_role() in ('admin'::public.user_role, 'technician'::public.user_role);
 $$;
 
+-- 9.1) ช่างซ่อมบำรุงแก้ไข Alarm ได้เฉพาะคอลัมน์ status เท่านั้น ----------------
+--      RLS ทำกับทั้งแถว (row) ไม่ใช่คอลัมน์ จึงต้องใช้ trigger ช่วยกันไม่ให้
+--      ช่างซ่อมบำรุงแก้ข้อมูลส่วนอื่นของ Alarm ผ่านการเรียก API ตรง ๆ
+create or replace function public.enforce_alarm_edit_scope()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  actor_role public.user_role;
+begin
+  select role into actor_role
+  from public.profiles
+  where id = auth.uid();
+
+  -- admin แก้ไขได้ทุกคอลัมน์
+  if actor_role = 'admin'::public.user_role then
+    return new;
+  end if;
+
+  -- ทุกบทบาทอื่น (รวมถึง technician) แก้ได้เฉพาะ status
+  if new.machine_id        is distinct from old.machine_id
+     or new.alarm_code       is distinct from old.alarm_code
+     or new.alarm_description is distinct from old.alarm_description
+     or new.cause            is distinct from old.cause then
+    raise exception 'สิทธิ์ % เปลี่ยนได้เฉพาะสถานะ (status) ของ Alarm เท่านั้น', coalesce(actor_role::text, 'null')
+      using errcode = '42501';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists alarms_edit_scope on public.alarms;
+create trigger alarms_edit_scope
+  before update on public.alarms
+  for each row
+  execute function public.enforce_alarm_edit_scope();
+
 -- 10) Policies: profiles ------------------------------------------------------
 --     ผู้ใช้อ่านโปรไฟล์ตัวเองได้, admin อ่าน/แก้ไขได้ทั้งหมด
 --     ผู้ใช้แก้ไขโปรไฟล์ตัวเองได้เฉพาะชื่อ (ห้ามเลื่อนบทบาทตัวเอง)
@@ -146,13 +186,13 @@ create policy machines_select on public.machines
 drop policy if exists machines_insert on public.machines;
 create policy machines_insert on public.machines
   for insert to authenticated
-  with check (public.can_write());
+  with check (public.is_admin());
 
 drop policy if exists machines_update on public.machines;
 create policy machines_update on public.machines
   for update to authenticated
-  using (public.can_write())
-  with check (public.can_write());
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists machines_delete on public.machines;
 create policy machines_delete on public.machines
@@ -160,6 +200,8 @@ create policy machines_delete on public.machines
   using (public.is_admin());
 
 -- 12) Policies: alarms --------------------------------------------------------
+--     admin  ทำได้ทั้งหมด
+--     tech   เปลี่ยนได้เฉพาะ status (คอลัมน์อื่นถูกกันด้วย trigger ในข้อ 9.1)
 drop policy if exists alarms_select on public.alarms;
 create policy alarms_select on public.alarms
   for select to authenticated
@@ -168,7 +210,7 @@ create policy alarms_select on public.alarms
 drop policy if exists alarms_insert on public.alarms;
 create policy alarms_insert on public.alarms
   for insert to authenticated
-  with check (public.can_write());
+  with check (public.is_admin());
 
 drop policy if exists alarms_update on public.alarms;
 create policy alarms_update on public.alarms
@@ -182,7 +224,7 @@ create policy alarms_delete on public.alarms
   using (public.is_admin());
 
 -- 13) Policies: maintenance_records ------------------------------------------
---     tech ลบงานซ่อมบำรุงได้ จึงใช้ can_write() เช่นเดียวกับ insert/update
+--     admin + tech บันทึก/แก้ไข/เปลี่ยนสถานะได้, ลบได้เฉพาะ admin
 drop policy if exists maintenance_records_select on public.maintenance_records;
 create policy maintenance_records_select on public.maintenance_records
   for select to authenticated
@@ -202,7 +244,7 @@ create policy maintenance_records_update on public.maintenance_records
 drop policy if exists maintenance_records_delete on public.maintenance_records;
 create policy maintenance_records_delete on public.maintenance_records
   for delete to authenticated
-  using (public.can_write());
+  using (public.is_admin());
 
 -- 14) Realtime: ตารางที่หน้าเว็บฟังการเปลี่ยนแปลง -------------------------
 --     machines/alarms -> NotificationListener, profiles -> อัปเดตบทบาทสด ๆ

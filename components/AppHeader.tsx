@@ -7,6 +7,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import NotificationBell from '@/components/NotificationBell';
 import UserBadge from '@/components/UserBadge';
 import LogoutButton from '@/components/LogoutButton';
+import ViewerNotice from '@/components/ViewerNotice';
 
 /** หน้าที่ไม่ต้องแสดงแถบเมนูด้านบน (หน้า Login) */
 const BARE_ROUTES = ['/login'];
@@ -53,6 +54,9 @@ export default function AppHeader() {
           <LogoutButton iconOnly />
         </div>
       </header>
+
+      {/* แถบแจ้งเตือนสิทธิ์ Viewer: แสดงเฉพาะเมื่อเป็นผู้ชมและล็อกอินแล้ว */}
+      <ViewerNotice />
 
       {/* แถบเมนูนำทาง: เชื่อมต่อทุกหน้าของระบบเข้าด้วยกัน */}
       <Navbar />

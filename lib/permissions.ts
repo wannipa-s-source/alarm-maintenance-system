@@ -1,10 +1,10 @@
 /**
  * นิยามบทบาทและสิทธิ์ของระบบ (ใช้ร่วมกันทั้งฝั่ง client และ proxy.ts)
  *
- * - admin      : จัดการได้ทุกอย่าง รวมถึงทะเบียนเครื่องจักร การลบ Alarm และการจัดการสิทธิ์ผู้ใช้
- * - technician : ดู/เพิ่ม/แก้ไข/ลบงานซ่อมบำรุง และจัดการเครื่องจักรกับ Alarm ได้
- *                แต่ลบทะเบียนเครื่องจักร/Alarm และจัดการสิทธิ์ผู้ใช้ไม่ได้
- * - viewer     : ดูอย่างเดียว
+ * - admin      : CRUD ได้ทุกหน้า (Machine, Alarm, Maintenance, Dashboard) + จัดการสิทธิ์ผู้ใช้
+ * - technician : ดูเครื่องจักร/Dashboard, บันทึก-แก้ไข-เปลี่ยนสถานะงานซ่อมบำรุง,
+ *                และเปลี่ยนสถานะ Alarm ได้ — ลบข้อมูลไม่ได้ และจัดการสิทธิ์ผู้ใช้ไม่ได้
+ * - viewer     : อ่านอย่างเดียว
  *
  * ไฟล์นี้ต้องไม่ import อะไรจาก react / lucide เพื่อให้ proxy.ts ใช้ได้ใน Edge runtime
  */
@@ -14,25 +14,27 @@ export type UserRole = 'admin' | 'technician' | 'viewer';
 export const USER_ROLES: readonly UserRole[] = ['admin', 'technician', 'viewer'];
 
 /**
- * สิทธิ์แยกตามทรัพยากร เพราะสิทธิ์ "ลบ" ของแต่ละตารางไม่เหมือนกัน
- * (ช่างซ่อมบำรุงลบงานซ่อมได้ แต่ลบทะเบียนเครื่องจักรไม่ได้)
+ * สิทธิ์แยกตามทรัพยากรและแยกตามชนิด เพราะ "ช่างซ่อมบำรุง" ทำได้ไม่เหมือนกันทุกตาราง
+ * เช่น เปลี่ยนสถานะ Alarm ได้ แต่สร้าง Alarm ใหม่หรือลบไม่ได้
  */
 export type Permission =
   /** ดูข้อมูลทุกโมดูล */
   | 'view'
-  /** เพิ่ม/แก้ไข/เปลี่ยนสถานะเครื่องจักร */
+  /** เพิ่ม/แก้ไข/เปลี่ยนสถานะเครื่องจักร (admin) */
   | 'editMachines'
-  /** ลบทะเบียนเครื่องจักร */
+  /** ลบเครื่องจักร (admin) */
   | 'deleteMachines'
-  /** บันทึก Alarm ใหม่ / เปลี่ยนสถานะ Alarm */
-  | 'editAlarms'
-  /** ลบประวัติ Alarm */
+  /** สร้าง Alarm ใหม่ (admin) */
+  | 'createAlarms'
+  /** เปลี่ยนสถานะ Alarm (admin + technician) */
+  | 'updateAlarmStatus'
+  /** ลบ Alarm (admin) */
   | 'deleteAlarms'
-  /** บันทึก/แก้ไข/เปลี่ยนสถานะงานซ่อมบำรุง */
+  /** บันทึก/แก้ไข/เปลี่ยนสถานะงานซ่อมบำรุง (admin + technician) */
   | 'editMaintenance'
-  /** ลบงานซ่อมบำรุง */
+  /** ลบงานซ่อมบำรุง (admin) */
   | 'deleteMaintenance'
-  /** จัดการบทบาทของผู้ใช้ในระบบ */
+  /** จัดการบทบาทของผู้ใช้ในระบบ (admin) */
   | 'manageUsers';
 
 const MATRIX: Record<UserRole, readonly Permission[]> = {
@@ -40,13 +42,14 @@ const MATRIX: Record<UserRole, readonly Permission[]> = {
     'view',
     'editMachines',
     'deleteMachines',
-    'editAlarms',
+    'createAlarms',
+    'updateAlarmStatus',
     'deleteAlarms',
     'editMaintenance',
     'deleteMaintenance',
     'manageUsers',
   ],
-  technician: ['view', 'editMachines', 'editAlarms', 'editMaintenance', 'deleteMaintenance'],
+  technician: ['view', 'updateAlarmStatus', 'editMaintenance'],
   viewer: ['view'],
 };
 
@@ -82,17 +85,22 @@ export const ROLE_META: Record<UserRole, RoleMeta> = {
   },
   technician: {
     label: 'ช่างซ่อมบำรุง',
-    description: 'ดูข้อมูลเครื่องจักร เพิ่มและแก้ไขเครื่องจักร/Alarm/งานซ่อมบำรุง รวมถึงลบงานซ่อมบำรุงได้ (จัดการสิทธิ์ผู้ใช้และลบทะเบียนหลักไม่ได้)',
+    description: 'ดูเครื่องจักรและ Dashboard, บันทึก/แก้ไข/เปลี่ยนสถานะงานซ่อมบำรุง และเปลี่ยนสถานะ Alarm ได้ (ลบข้อมูลไม่ได้)',
     badge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300',
     dot: 'bg-cyan-500',
   },
   viewer: {
     label: 'ผู้ชม',
-    description: 'เข้าชมและดูข้อมูลอย่างเดียว แก้ไขข้อมูลไม่ได้',
+    description: 'อ่านข้อมูลอย่างเดียว แก้ไขหรือลบข้อมูลไม่ได้',
     badge: 'bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-300',
     dot: 'bg-slate-500',
   },
 };
+
+/** true เมื่อบทบาทนี้อ่านอย่างเดียว (ใช้แสดงแถบแจ้งเตือนและ disable form control) */
+export function isReadOnly(role: UserRole): boolean {
+  return !can(role, 'editMaintenance') && !can(role, 'updateAlarmStatus');
+}
 
 /* ------------------------------------------------------------
    สิทธิ์ระดับหน้า (route) — ใช้ร่วมกันระหว่าง Navbar (ซ่อนเมนู) กับ proxy.ts (บล็อกการเข้าถึง)
