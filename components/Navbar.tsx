@@ -4,18 +4,23 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import { isActivePath, navItems } from '@/lib/navItems';
+import { isActivePath, navItemsForRole } from '@/lib/navItems';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { role } = useAuth();
   const [open, setOpen] = useState(false);
+
+  // ซ่อนเมนูที่ผู้ใช้ไม่มีสิทธิ์เข้าถึง (เช่น /users สำหรับ Technician)
+  const items = navItemsForRole(role);
 
   return (
     <nav className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md border-b border-slate-200 dark:border-blue-900/40 shadow-sm dark:shadow-lg dark:shadow-blue-950/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* เมนูหลัก (จอใหญ่) */}
         <ul className="hidden md:flex items-center gap-1 py-2 overflow-x-auto">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const active = isActivePath(pathname, item.href);
             const Icon = item.icon;
 
@@ -58,7 +63,7 @@ export default function Navbar() {
         {/* เมนูสำหรับมือถือ */}
         {open && (
           <ul className="md:hidden pb-3 space-y-1">
-            {navItems.map((item) => {
+            {items.map((item) => {
               const active = isActivePath(pathname, item.href);
               const Icon = item.icon;
 
