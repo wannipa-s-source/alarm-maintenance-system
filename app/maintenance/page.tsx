@@ -1,9 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
+import { useRole } from '@/context/RoleContext';
+import { ROLE_META } from '@/lib/permissions';
 
 export default function MaintenancePage() {
+  const { role, can } = useRole();
+  const canEditMaintenance = can('editMaintenance');
+  const canDeleteMaintenance = can('deleteMaintenance');
   const [records, setRecords] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [form, setForm] = useState({ machine_id: '', maintenance_type: 'Corrective', problem: '', action_taken: '', status: 'Pending' });
@@ -34,6 +41,11 @@ export default function MaintenancePage() {
     e.preventDefault();
     setErrorMsg('');
 
+    if (!canEditMaintenance) {
+      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
+      return;
+    }
+
     if (!form.machine_id || !form.problem) {
       setErrorMsg('กรุณาเลือกเครื่องจักรและระบุปัญหา (Problem)');
       return;
@@ -51,7 +63,24 @@ export default function MaintenancePage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!canEditMaintenance) return;
     await supabase.from('maintenance_records').update({ status: newStatus }).eq('id', id);
+    fetchData();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!canDeleteMaintenance) return;
+
+    if (!confirm('ยืนยันการลบงานซ่อมบำรุงรายการนี้?')) return;
+
+    const { error } = await supabase.from('maintenance_records').delete().eq('id', id);
+
+    if (error) {
+      toast.error('ลบงานซ่อมบำรุงไม่สำเร็จ: ' + error.message);
+      return;
+    }
+
+    toast.success('ลบงานซ่อมบำรุงเรียบร้อยแล้ว');
     fetchData();
   };
 
@@ -118,8 +147,9 @@ export default function MaintenancePage() {
           </button>
         </div>
 
-        {/* ฟอร์มบันทึก Maintenance */}
-        <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl space-y-4">
+        {/* ฟอร์มบันทึก Maintenance (เฉพาะ admin / technician) */}
+        {canEditMaintenance ? (
+          <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-wide">บันทึกการบำรุงรักษา / ซ่อมแซม</h2>
@@ -199,7 +229,15 @@ export default function MaintenancePage() {
               <span>{submitting ? 'กำลังบันทึก...' : 'บันทึกงาน Maintenance'}</span>
             </button>
           </div>
-        </form>
+          </form>
+        ) : (
+          <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-400 text-xs sm:text-sm flex items-center gap-2">
+            <span>🔒</span>
+            <span>
+              คุณกำลังใช้งานในโหมด <b>{ROLE_META[role].label}</b> ({ROLE_META[role].description})
+            </span>
+          </div>
+        )}
 
         {/* ส่วนค้นหา และ ตัวกรอง (Search & Filters Section) */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
@@ -272,12 +310,13 @@ export default function MaintenancePage() {
                   <th className="p-4">Problem</th>
                   <th className="p-4">Action Taken</th>
                   <th className="p-4 text-center">Status</th>
+                  <th className="p-4 text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-500">
+                    <td colSpan={7} className="p-8 text-center text-slate-500">
                       ไม่พบประวัติการทำ Maintenance ที่ตรงกับเงื่อนไขการค้นหา
                     </td>
                   </tr>
@@ -302,21 +341,46 @@ export default function MaintenancePage() {
                         {r.action_taken || '-'}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        <select
-                          value={r.status}
-                          onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
-                            r.status === 'Pending'
-                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-                              : r.status === 'In Progress'
-                              ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-                              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                          }`}
-                        >
-                          <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
-                          <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
-                          <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
-                        </select>
+                        {canEditMaintenance ? (
+                          <select
+                            value={r.status}
+                            onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
+                              r.status === 'Pending'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                                : r.status === 'In Progress'
+                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+                            }`}
+                          >
+                            <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
+                            <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
+                            <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
+                          </select>
+                        ) : (
+                          <span
+                            className={`inline-block px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                              r.status === 'Pending'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                                : r.status === 'In Progress'
+                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-center whitespace-nowrap">
+                        {canDeleteMaintenance && (
+                          <button
+                            onClick={() => handleDelete(r.id)}
+                            title="ลบงานซ่อมบำรุง"
+                            className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))

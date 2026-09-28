@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRole } from '@/context/RoleContext';
+import { ROLE_META } from '@/lib/permissions';
 
 export default function AlarmsPage() {
+  const { role, can } = useRole();
+  const canEditAlarms = can('editAlarms');
   const [alarms, setAlarms] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [form, setForm] = useState({ machine_id: '', alarm_code: '', alarm_description: '', cause: '', status: 'Open' });
@@ -33,6 +37,11 @@ export default function AlarmsPage() {
     e.preventDefault();
     setErrorMsg('');
 
+    if (!canEditAlarms) {
+      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
+      return;
+    }
+
     if (!form.machine_id || !form.alarm_code || !form.alarm_description) {
       setErrorMsg('กรุณากรอกข้อมูล Machine, Alarm Code และ Description ให้ครบถ้วน');
       return;
@@ -50,6 +59,7 @@ export default function AlarmsPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!canEditAlarms) return;
     await supabase.from('alarms').update({ status: newStatus }).eq('id', id);
     fetchData();
   };
@@ -109,8 +119,9 @@ export default function AlarmsPage() {
           </button>
         </div>
 
-        {/* ฟอร์มบันทึก Alarm */}
-        <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl space-y-4">
+        {/* ฟอร์มบันทึก Alarm (เฉพาะ admin / technician) */}
+        {canEditAlarms ? (
+          <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-ping" />
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-wide">แจ้งเหตุการณ์ Alarm ใหม่</h2>
@@ -188,7 +199,15 @@ export default function AlarmsPage() {
               <span>{submitting ? 'กำลังบันทึก...' : 'บันทึก Alarm'}</span>
             </button>
           </div>
-        </form>
+          </form>
+        ) : (
+          <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-400 text-xs sm:text-sm flex items-center gap-2">
+            <span>🔒</span>
+            <span>
+              คุณกำลังใช้งานในโหมด <b>{ROLE_META[role].label}</b> ({ROLE_META[role].description})
+            </span>
+          </div>
+        )}
 
         {/* ส่วนค้นหา และ กรองสถานะ (Search & Filter Section) */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
@@ -272,21 +291,35 @@ export default function AlarmsPage() {
                         {a.cause || '-'}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        <select
-                          value={a.status}
-                          onChange={(e) => handleStatusChange(a.id, e.target.value)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
-                            a.status === 'Open'
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20'
-                              : a.status === 'In Progress'
-                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-                              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                          }`}
-                        >
-                          <option value="Open" className="bg-slate-100 dark:bg-[#0d1322] text-rose-600 dark:text-rose-400">Open</option>
-                          <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">In Progress</option>
-                          <option value="Closed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Closed</option>
-                        </select>
+                        {canEditAlarms ? (
+                          <select
+                            value={a.status}
+                            onChange={(e) => handleStatusChange(a.id, e.target.value)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
+                              a.status === 'Open'
+                                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20'
+                                : a.status === 'In Progress'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+                            }`}
+                          >
+                            <option value="Open" className="bg-slate-100 dark:bg-[#0d1322] text-rose-600 dark:text-rose-400">Open</option>
+                            <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">In Progress</option>
+                            <option value="Closed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Closed</option>
+                          </select>
+                        ) : (
+                          <span
+                            className={`inline-block px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                              a.status === 'Open'
+                                ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
+                                : a.status === 'In Progress'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                            }`}
+                          >
+                            {a.status}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))
