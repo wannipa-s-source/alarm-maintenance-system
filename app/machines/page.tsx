@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRole } from '@/context/RoleContext';
+import { ROLE_META } from '@/lib/permissions';
 import toast from 'react-hot-toast';
 
 export default function MachinesPage() {
@@ -281,7 +282,9 @@ export default function MachinesPage() {
         ) : (
           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-400 text-xs sm:text-sm flex items-center gap-2">
             <span>🔒</span>
-            <span>คุณกำลังใช้งานในโหมด <b>Viewer</b> (ดูข้อมูลได้อย่างเดียว)</span>
+            <span>
+              คุณกำลังใช้งานในโหมด <b>{ROLE_META[role].label}</b> ({ROLE_META[role].description})
+            </span>
           </div>
         )}
 

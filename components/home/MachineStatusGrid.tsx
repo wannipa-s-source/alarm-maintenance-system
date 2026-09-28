@@ -9,13 +9,15 @@ type Props = {
   /** จำนวนเครื่องที่แสดงทั้งหมด (เพื่อบอกว่ากำลังกรองอยู่หรือไม่) */
   totalCount: number;
   onQuickRequest: (machine: Machine) => void;
+  /** สิทธิ์สร้างใบแจ้งซ่อม (admin / technician) — ผู้ชมจะไม่เห็นปุ่มนี้ */
+  canRequest?: boolean;
 };
 
 /**
  * ส่วนที่ 3 — Machine Overview / Status Grid
  * การ์ดของเครื่องจักรแต่ละเครื่อง พร้อมสถานะแบบ Real-time และปุ่มลัด
  */
-export default function MachineStatusGrid({ machines, totalCount, onQuickRequest }: Props) {
+export default function MachineStatusGrid({ machines, totalCount, onQuickRequest, canRequest = false }: Props) {
   return (
     <section aria-label="ภาพรวมสถานะเครื่องจักร" className="space-y-4">
       {/* หัวข้อส่วน */}
@@ -116,7 +118,11 @@ export default function MachineStatusGrid({ machines, totalCount, onQuickRequest
                   </p>
 
                   {/* Quick Action Buttons */}
-                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/70 grid grid-cols-2 gap-2">
+                  <div
+                    className={`mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/70 grid gap-2 ${
+                      canRequest ? 'grid-cols-2' : 'grid-cols-1'
+                    }`}
+                  >
                     <Link
                       href={`/machines/${machine.id}`}
                       className="inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95"
@@ -124,14 +130,16 @@ export default function MachineStatusGrid({ machines, totalCount, onQuickRequest
                       <History className="w-3.5 h-3.5" />
                       ประวัติ
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => onQuickRequest(machine)}
-                      className="inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-all active:scale-95"
-                    >
-                      <PlusCircle className="w-3.5 h-3.5" />
-                      แจ้งซ่อม
-                    </button>
+                    {canRequest && (
+                      <button
+                        type="button"
+                        onClick={() => onQuickRequest(machine)}
+                        className="inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-all active:scale-95"
+                      >
+                        <PlusCircle className="w-3.5 h-3.5" />
+                        แจ้งซ่อม
+                      </button>
+                    )}
                   </div>
                 </div>
               </article>

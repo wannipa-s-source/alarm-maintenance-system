@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabaseConfig';
+import { canAccessRoute, normalizeRole } from '@/lib/permissions';
 
 /** เฉพาะหน้าเข้าสู่ระบบที่เข้าถึงได้โดยไม่ต้องล็อกอิน */
 const PUBLIC_ROUTES = ['/login'];
@@ -42,6 +43,23 @@ export async function proxy(request: NextRequest) {
       url.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
     }
     return NextResponse.redirect(url);
+  }
+
+  // ล็อกอินแล้วแต่บทบาทไม่ถึงหน้านี้ -> ส่งกลับหน้าแรกพร้อมข้อความแจ้งเหตุผล
+  if (user && !canAccessRoute(pathname, 'viewer')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!canAccessRoute(pathname, normalizeRole(profile?.role))) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      url.search = '';
+      url.searchParams.set('denied', pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   // หมายเหตุ: ปล่อยให้ผู้ที่ล็อกอินแล้วเข้าหน้า Login ได้

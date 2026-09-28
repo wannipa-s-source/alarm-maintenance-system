@@ -8,6 +8,8 @@ type Props = {
   onNewLog: () => void;
   /** เรียกใช้เมื่อกดปุ่มออกรายงาน */
   onExport: () => void;
+  /** สิทธิ์สร้างใบแจ้งซ่อม (admin / technician) — ผู้ชมจะไม่เห็นปุ่มนี้ */
+  canCreate?: boolean;
 };
 
 const actions = [
@@ -18,6 +20,7 @@ const actions = [
     href: null,
     Icon: ClipboardPlus,
     tone: 'from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500',
+    requiresWrite: true,
   },
   {
     key: 'history',
@@ -26,6 +29,7 @@ const actions = [
     href: '/machines',
     Icon: History,
     tone: 'from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500',
+    requiresWrite: false,
   },
   {
     key: 'export',
@@ -34,6 +38,7 @@ const actions = [
     href: null,
     Icon: FileDown,
     tone: 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500',
+    requiresWrite: false,
   },
 ] as const;
 
@@ -41,12 +46,17 @@ const actions = [
  * ส่วนที่ 5 (ปุ่มลัด) — Quick Action Floating Bar
  * แถบปุ่มลัดแบบลอยติดขอบล่างจอ สำหรับมือถือ และซ่อนเป็นแถบเต็มความกว้างบนจอใหญ่
  */
-export default function QuickActionBar({ onNewLog, onExport }: Props) {
+export default function QuickActionBar({ onNewLog, onExport, canCreate = false }: Props) {
+  const visibleActions = actions.filter((action) => !action.requiresWrite || canCreate);
+
   return (
     <div className="sticky bottom-4 z-40 mt-2">
       <div className="mx-auto w-full max-w-3xl bg-white/85 dark:bg-[#111827]/90 backdrop-blur-md border border-slate-200 dark:border-blue-900/50 rounded-2xl shadow-2xl p-2">
-        <div className="grid grid-cols-3 gap-2">
-          {actions.map((action) => {
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${visibleActions.length}, minmax(0, 1fr))` }}
+        >
+          {visibleActions.map((action) => {
             const Icon = action.Icon;
             const content = (
               <>

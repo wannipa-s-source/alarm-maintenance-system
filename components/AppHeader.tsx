@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import RoleSelector from '@/components/RoleSelector';
 import Navbar from '@/components/Navbar';
 import ThemeToggle from '@/components/ThemeToggle';
 import NotificationBell from '@/components/NotificationBell';
@@ -17,7 +16,7 @@ function isBareRoute(pathname: string): boolean {
 }
 
 /**
- * แถบด้านบนของระบบ (โลโก้ + การแจ้งเตือน + สลับธีม + โปรไฟล์ + สลับบทบาท) และแถบเมนูนำทาง
+ * แถบด้านบนของระบบ (โลโก้ + การแจ้งเตือน + สลับธีม + โปรไฟล์ผู้ใช้) และแถบเมนูนำทาง
  * จะไม่แสดงบนหน้า Login เพื่อให้หน้าเหล่านั้นแสดงเฉพาะฟอร์มเข้าสู่ระบบ
  */
 export default function AppHeader() {
@@ -46,12 +45,11 @@ export default function AppHeader() {
           </div>
         </Link>
 
-        {/* ด้านขวา: การแจ้งเตือน + สลับธีม + โปรไฟล์ผู้ใช้ + สลับบทบาท + ออกจากระบบ */}
+        {/* ด้านขวา: การแจ้งเตือน + สลับธีม + โปรไฟล์ผู้ใช้ (แสดงบทบาทจริงจากฐานข้อมูล) + ออกจากระบบ */}
         <div className="flex items-center gap-2 sm:gap-3">
           <NotificationBell />
           <ThemeToggle />
           <UserBadge />
-          <RoleSelector />
           <LogoutButton iconOnly />
         </div>
       </header>
