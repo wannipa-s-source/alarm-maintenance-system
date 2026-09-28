@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -121,9 +122,19 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* ลิงก์ไปหน้าสมัครสมาชิก */}
+        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            ยังไม่มีบัญชี?{' '}
+            <Link href="/register" className="font-semibold text-blue-600 dark:text-cyan-400 hover:underline">
+              สมัครสมาชิก
+            </Link>
+          </p>
+        </div>
+
         {/* Footer info */}
         <p className="text-xs text-center text-slate-400 mt-8">
-          &copy; {new Date().getFullYear()} Alarm & Maintenance System. All rights reserved.
+          &copy; {new Date().getFullYear()} Smart Factory Maintenance System. All rights reserved.
         </p>
       </div>
     </div>
