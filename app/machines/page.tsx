@@ -22,6 +22,39 @@ export default function MachinesPage() {
     if (data) setMachines(data);
   };
 
+  // 📥 ฟังก์ชันสำหรับแปลงข้อมูลและดาวน์โหลด CSV
+  const exportToCSV = () => {
+    if (machines.length === 0) {
+      toast.error('ไม่มีข้อมูลสำหรับส่งออก');
+      return;
+    }
+
+    const headers = ['Machine ID', 'Machine Name', 'Type', 'Location', 'Status'];
+    const rows = machines.map((m) => [
+      `"${m.machine_id || ''}"`,
+      `"${m.machine_name || ''}"`,
+      `"${m.machine_type || ''}"`,
+      `"${m.location || ''}"`,
+      `"${m.status || ''}"`,
+    ]);
+
+    const csvContent =
+      '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `machines_report_${dateStr}.csv`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว!');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -109,7 +142,18 @@ export default function MachinesPage() {
           </div>
           
           <div className="flex items-center justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
-            {/* ปุ่ม Refresh (ตัด ThemeToggle ออกจากหน้านี้แล้ว เหลือไว้แค่ปุ่มบน Header หลัก) */}
+            {/* ปุ่ม Export CSV */}
+            <button
+              onClick={exportToCSV}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition-all duration-200 active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export CSV</span>
+            </button>
+
+            {/* ปุ่ม Refresh */}
             <button
               onClick={fetchMachines}
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 transition-all duration-200 active:scale-95"
@@ -222,7 +266,7 @@ export default function MachinesPage() {
         {/* รายการเครื่องจักร */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg overflow-hidden">
           
-          {/* Mobile View: การ์ดสำหรับจอมือถือ (< md) */}
+          {/* Mobile View */}
           <div className="block md:hidden divide-y divide-slate-200 dark:divide-slate-800">
             {machines.length === 0 ? (
               <div className="p-6 text-center text-slate-500">ไม่พบรายการเครื่องจักรในระบบ</div>
@@ -276,7 +320,7 @@ export default function MachinesPage() {
             )}
           </div>
 
-          {/* Desktop View: ตารางมาตรฐาน (>= md) */}
+          {/* Desktop View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
