@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({ total: 0, running: 0, stop: 0, alarm: 0, maintenance: 0 });
+  const [machines, setMachines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,8 +15,9 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     setLoading(true);
-    const { data } = await supabase.from('machines').select('status');
+    const { data } = await supabase.from('machines').select('*');
     if (data) {
+      setMachines(data);
       setStats({
         total: data.length,
         running: data.filter((m) => m.status === 'Running').length,
@@ -27,6 +30,14 @@ export default function DashboardPage() {
   };
 
   const runningPercentage = stats.total > 0 ? Math.round((stats.running / stats.total) * 100) : 0;
+
+  // ข้อมูลสำหรับนำไปแสดงในกราฟ Recharts
+  const chartData = [
+    { name: 'Running', count: stats.running, color: '#10b981' },
+    { name: 'Stop', count: stats.stop, color: '#64748b' },
+    { name: 'Alarm', count: stats.alarm, color: '#f43f5e' },
+    { name: 'Maintenance', count: stats.maintenance, color: '#8b5cf6' },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 p-6 md:p-10 relative overflow-hidden font-sans transition-colors duration-300">
@@ -142,6 +153,69 @@ export default function DashboardPage() {
             <div>
               <div className="text-3xl font-black text-purple-600 dark:text-purple-400">{stats.maintenance}</div>
               <p className="text-xs text-purple-600 dark:text-purple-300/80 mt-1">อยู่ระหว่างซ่อมบำรุง</p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* กราฟวิเคราะห์สถานะและ Alarm (Analytics Charts Section) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* กราฟแท่ง (Bar Chart) */}
+          <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 tracking-wide">
+              📊 สถิติจำนวนเครื่องจักรแยกตามสถานะ (Bar Chart)
+            </h3>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} allowDecimals={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '12px', color: '#fff' }} 
+                  />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* กราฟวงกลมสัดส่วน (Pie Chart) */}
+          <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 tracking-wide">
+              🍩 สัดส่วนเปอร์เซ็นต์สถานะเครื่องจักร (Distribution)
+            </h3>
+            <div className="h-72 w-full flex items-center justify-center">
+              {stats.total === 0 ? (
+                <p className="text-sm text-slate-400">ยังไม่มีข้อมูลในระบบ</p>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '12px', color: '#fff' }} 
+                    />
+                    <Pie
+                      data={chartData.filter(d => d.count > 0)}
+                      dataKey="count"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={45}
+                      paddingAngle={5}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`pie-cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
