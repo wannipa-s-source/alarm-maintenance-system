@@ -13,6 +13,11 @@ export default function MachinesPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // 🔍 State สำหรับ Filter และ Search ขั้นสูง
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState('All');
+
   useEffect(() => {
     fetchMachines();
   }, []);
@@ -22,15 +27,32 @@ export default function MachinesPage() {
     if (data) setMachines(data);
   };
 
-  // 📥 ฟังก์ชันสำหรับแปลงข้อมูลและดาวน์โหลด CSV
+  // ดึงรายการประเภทเครื่องจักรที่ไม่ซ้ำกันเพื่อทำตัวเลือกใน Dropdown
+  const uniqueTypes = Array.from(new Set(machines.map((m) => m.machine_type))).filter(Boolean);
+
+  // 🛠️ ฟังก์ชันกรองข้อมูล (Advanced Filter Logic)
+  const filteredMachines = machines.filter((m) => {
+    const matchesSearch = 
+      m.machine_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.machine_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.location?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'All' || m.status === statusFilter;
+    const matchesType = typeFilter === 'All' || m.machine_type === typeFilter;
+
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  // 📥 ฟังก์ชันสำหรับแปลงข้อมูลและดาวน์โหลด CSV (ใช้ข้อมูลจากที่กรองแล้ว หรือทั้งหมดตามต้องการ)
   const exportToCSV = () => {
-    if (machines.length === 0) {
+    const dataToExport = filteredMachines.length > 0 ? filteredMachines : machines;
+    if (dataToExport.length === 0) {
       toast.error('ไม่มีข้อมูลสำหรับส่งออก');
       return;
     }
 
     const headers = ['Machine ID', 'Machine Name', 'Type', 'Location', 'Status'];
-    const rows = machines.map((m) => [
+    const rows = dataToExport.map((m) => [
       `"${m.machine_id || ''}"`,
       `"${m.machine_name || ''}"`,
       `"${m.machine_type || ''}"`,
@@ -263,15 +285,85 @@ export default function MachinesPage() {
           </div>
         )}
 
+        {/* 🔍 Advanced Filter & Search Component */}
+        <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* ช่องค้นหาข้อความ */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">ค้นหาเครื่องจักร</label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="ค้นหาด้วย ID, ชื่อ หรือสถานที่..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition"
+                />
+              </div>
+            </div>
+
+            {/* กรองตาม Status */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">กรองตามสถานะ</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-cyan-500 transition"
+              >
+                <option value="All">สถานะทั้งหมด (All Status)</option>
+                <option value="Running">Running</option>
+                <option value="Stop">Stop</option>
+                <option value="Alarm">Alarm</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+
+            {/* กรองตาม Machine Type */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">กรองตามประเภท</label>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-cyan-500 transition"
+              >
+                <option value="All">ประเภททั้งหมด (All Types)</option>
+                {uniqueTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+          </div>
+
+          {/* สรุปผลการกรอง */}
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <span>แสดงผลลัพธ์ <strong className="text-slate-700 dark:text-slate-200">{filteredMachines.length}</strong> จากทั้งหมด {machines.length} รายการ</span>
+            {(searchTerm || statusFilter !== 'All' || typeFilter !== 'All') && (
+              <button
+                onClick={() => { setSearchTerm(''); setStatusFilter('All'); setTypeFilter('All'); }}
+                className="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold"
+              >
+                ล้างตัวกรองทั้งหมด
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* รายการเครื่องจักร */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg overflow-hidden">
           
           {/* Mobile View */}
           <div className="block md:hidden divide-y divide-slate-200 dark:divide-slate-800">
-            {machines.length === 0 ? (
-              <div className="p-6 text-center text-slate-500">ไม่พบรายการเครื่องจักรในระบบ</div>
+            {filteredMachines.length === 0 ? (
+              <div className="p-6 text-center text-slate-500">ไม่พบรายการเครื่องจักรที่ตรงกับเงื่อนไข</div>
             ) : (
-              machines.map((m) => (
+              filteredMachines.map((m) => (
                 <div key={m.id} className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <Link 
@@ -334,14 +426,14 @@ export default function MachinesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
-                {machines.length === 0 ? (
+                {filteredMachines.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-slate-500">
-                      ไม่พบรายการเครื่องจักรในระบบ
+                      ไม่พบรายการเครื่องจักรที่ตรงกับเงื่อนไข
                     </td>
                   </tr>
                 ) : (
-                  machines.map((m) => (
+                  filteredMachines.map((m) => (
                     <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="p-4 whitespace-nowrap">
                         <Link 
