@@ -1,6 +1,5 @@
-import { BellRing, Factory, House, LayoutDashboard, Users, Wrench } from 'lucide-react';
+import { BellRing, Factory, House, LayoutDashboard, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { UserRole } from '@/context/AuthContext';
 
 export type NavItem = {
   href: string;
@@ -9,8 +8,6 @@ export type NavItem = {
   icon: LucideIcon;
   /** สีเน้น (แบ่งตามโมดูลของระบบ) */
   accent: string;
-  /** ถ้าไม่ระบุ = ทุก Role เข้าถึงได้ */
-  roles?: UserRole[];
 };
 
 export const navItems: NavItem[] = [
@@ -49,24 +46,10 @@ export const navItems: NavItem[] = [
     icon: Wrench,
     accent: 'text-purple-600 dark:text-purple-400',
   },
-  {
-    href: '/users',
-    label: 'ผู้ใช้งาน',
-    description: 'จัดการสิทธิ์ (Role) ของผู้ใช้แต่ละคน',
-    icon: Users,
-    accent: 'text-indigo-600 dark:text-indigo-400',
-    roles: ['admin'],
-  },
 ];
 
 /** เช็คว่าเมนูใดตรงกับหน้าที่กำลังเปิดอยู่ (รองรับ Dynamic Route เช่น /machines/[id]) */
 export function isActivePath(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-/** กรองเมนูตามสิทธิ์ของผู้ใช้ที่ล็อกอินอยู่ */
-export function navItemsForRole(role: UserRole | null) {
-  if (!role) return navItems.filter((item) => !item.roles);
-  return navItems.filter((item) => !item.roles || item.roles.includes(role));
 }

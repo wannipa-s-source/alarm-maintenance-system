@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
+import { RoleProvider } from "@/context/RoleContext";
+import RoleSelector from "@/components/RoleSelector";
 import { Toaster } from "react-hot-toast";
 import NotificationListener from "@/components/NotificationListener";
 import { Providers } from "./providers"; // Import ตัวคลุมธีมเข้ามา
 import ThemeToggle from "@/components/ThemeToggle"; // 1. Import ปุ่มสลับธีมเข้ามา
 import Navbar from "@/components/Navbar"; // 2. Import แถบเมนูนำทาง (แสดงทุกหน้า)
-import UserMenu from "@/components/UserMenu"; // 3. Import เมนูผู้ใช้ + ปุ่ม Logout
 
 export const metadata: Metadata = {
   title: "Alarm & Maintenance System",
@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="th" suppressHydrationWarning>
       <body className="antialiased bg-slate-50 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300">
         <Providers>
-          <AuthProvider>
+          <RoleProvider>
             {/* ระบบแจ้งเตือน Pop-up (Toast Notifications) */}
             <Toaster position="top-right" reverseOrder={false} />
             
@@ -44,10 +44,10 @@ export default function RootLayout({
                   </span>
                 </Link>
 
-                {/* ด้านขวา: ปุ่มสลับธีม (ThemeToggle) + ผู้ใช้งาน/สิทธิ์ (UserMenu) */}
+                {/* ด้านขวา: ปุ่มสลับธีม (ThemeToggle) + ส่วนสลับบทบาทผู้ใช้งาน (Role Selector) */}
                 <div className="flex items-center gap-2 sm:gap-3">
                   <ThemeToggle />
-                  <UserMenu />
+                  <RoleSelector />
                 </div>
               </header>
 
@@ -57,7 +57,7 @@ export default function RootLayout({
 
             {/* เนื้อหาหน้าเว็บแต่ละหน้า */}
             <main>{children}</main>
-          </AuthProvider>
+          </RoleProvider>
         </Providers>
       </body>
     </html>

@@ -2,28 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import toast from 'react-hot-toast';
-import { useAuth } from '@/context/AuthContext';
-
-type MaintenanceRecord = {
-  id: string;
-  machine_id: string;
-  maintenance_type: string;
-  problem: string | null;
-  action_taken: string | null;
-  status: string;
-};
 
 export default function MaintenancePage() {
-  const { isAdmin, canEditMaintenance } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [form, setForm] = useState({ machine_id: '', maintenance_type: 'Corrective', problem: '', action_taken: '', status: 'Pending' });
   const [errorMsg, setErrorMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  // รหัสรายการที่กำลังแก้ไข (null = เพิ่มรายการใหม่)
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Search & Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,19 +30,9 @@ export default function MaintenancePage() {
     if (maintenanceData) setRecords(maintenanceData);
   };
 
-  const resetForm = () => {
-    setForm({ machine_id: '', maintenance_type: 'Corrective', problem: '', action_taken: '', status: 'Pending' });
-    setEditingId(null);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-
-    if (!canEditMaintenance) {
-      setErrorMsg('คุณไม่มีสิทธิ์ในการบันทึกหรือแก้ไขข้อมูล Maintenance');
-      return;
-    }
 
     if (!form.machine_id || !form.problem) {
       setErrorMsg('กรุณาเลือกเครื่องจักรและระบุปัญหา (Problem)');
@@ -65,57 +40,18 @@ export default function MaintenancePage() {
     }
 
     setSubmitting(true);
-
-    const { error } = editingId
-      ? await supabase.from('maintenance_records').update(form).eq('id', editingId)
-      : await supabase.from('maintenance_records').insert([form]);
-
+    const { error } = await supabase.from('maintenance_records').insert([form]);
     if (error) {
       setErrorMsg(error.message);
-      toast.error('บันทึกข้อมูลไม่สำเร็จ: ' + error.message);
     } else {
-      toast.success(editingId ? 'แก้ไขข้อมูล Maintenance เรียบร้อยแล้ว' : 'บันทึกงาน Maintenance เรียบร้อยแล้ว');
-      resetForm();
+      setForm({ machine_id: '', maintenance_type: 'Corrective', problem: '', action_taken: '', status: 'Pending' });
       fetchData();
     }
     setSubmitting(false);
   };
 
-  // เข้าสู่โหมดแก้ไข: นำข้อมูลเดิมมาใส่ฟอร์ม
-  const handleEdit = (record: MaintenanceRecord) => {
-    setEditingId(record.id);
-    setErrorMsg('');
-    setForm({
-      machine_id: record.machine_id,
-      maintenance_type: record.maintenance_type,
-      problem: record.problem ?? '',
-      action_taken: record.action_taken ?? '',
-      status: record.status,
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!isAdmin) return;
-    if (!confirm('ยืนยันการลบรายการ Maintenance นี้?')) return;
-
-    const { error } = await supabase.from('maintenance_records').delete().eq('id', id);
-    if (error) {
-      toast.error('ลบข้อมูลไม่สำเร็จ: ' + error.message);
-    } else {
-      toast.success('ลบรายการ Maintenance เรียบร้อยแล้ว');
-      if (editingId === id) resetForm();
-      fetchData();
-    }
-  };
-
   const handleStatusChange = async (id: string, newStatus: string) => {
-    if (!canEditMaintenance) return;
-    const { error } = await supabase.from('maintenance_records').update({ status: newStatus }).eq('id', id);
-    if (error) {
-      setErrorMsg(error.message);
-      return;
-    }
+    await supabase.from('maintenance_records').update({ status: newStatus }).eq('id', id);
     fetchData();
   };
 
@@ -182,24 +118,11 @@ export default function MaintenancePage() {
           </button>
         </div>
 
-        {/* ฟอร์มบันทึก Maintenance (Admin + Technician) */}
+        {/* ฟอร์มบันทึก Maintenance */}
         <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl space-y-4">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-wide">
-                {editingId ? 'แก้ไขข้อมูลการบำรุงรักษา' : 'บันทึกการบำรุงรักษา / ซ่อมแซม'}
-              </h2>
-            </div>
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-3 py-1.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 transition-all"
-              >
-                ยกเลิกการแก้ไข
-              </button>
-            )}
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-wide">บันทึกการบำรุงรักษา / ซ่อมแซม</h2>
           </div>
 
           {errorMsg && (
@@ -273,7 +196,7 @@ export default function MaintenancePage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
-              <span>{submitting ? 'กำลังบันทึก...' : editingId ? 'บันทึกการแก้ไข' : 'บันทึกงาน Maintenance'}</span>
+              <span>{submitting ? 'กำลังบันทึก...' : 'บันทึกงาน Maintenance'}</span>
             </button>
           </div>
         </form>
@@ -349,13 +272,12 @@ export default function MaintenancePage() {
                   <th className="p-4">Problem</th>
                   <th className="p-4">Action Taken</th>
                   <th className="p-4 text-center">Status</th>
-                  <th className="p-4 text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                    <td colSpan={6} className="p-8 text-center text-slate-500">
                       ไม่พบประวัติการทำ Maintenance ที่ตรงกับเงื่อนไขการค้นหา
                     </td>
                   </tr>
@@ -380,49 +302,21 @@ export default function MaintenancePage() {
                         {r.action_taken || '-'}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        {canEditMaintenance ? (
-                          <select
-                            value={r.status}
-                            onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
-                              r.status === 'Pending'
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-                                : r.status === 'In Progress'
-                                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-                            }`}
-                          >
-                            <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
-                            <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
-                            <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
-                          </select>
-                        ) : (
-                          <span className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700">
-                            {r.status}
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-4 text-center whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
-                          {canEditMaintenance && (
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(r)}
-                              className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95"
-                            >
-                              แก้ไข
-                            </button>
-                          )}
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(r.id)}
-                              className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95"
-                            >
-                              ลบ
-                            </button>
-                          )}
-                        </div>
+                        <select
+                          value={r.status}
+                          onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border focus:outline-none transition-all cursor-pointer ${
+                            r.status === 'Pending'
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                              : r.status === 'In Progress'
+                              ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
+                              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          <option value="Pending" className="bg-slate-100 dark:bg-[#0d1322] text-amber-600 dark:text-amber-400">Pending</option>
+                          <option value="In Progress" className="bg-slate-100 dark:bg-[#0d1322] text-cyan-600 dark:text-cyan-400">In Progress</option>
+                          <option value="Completed" className="bg-slate-100 dark:bg-[#0d1322] text-emerald-600 dark:text-emerald-400">Completed</option>
+                        </select>
                       </td>
                     </tr>
                   ))

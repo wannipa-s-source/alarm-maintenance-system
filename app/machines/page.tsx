@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { useRole } from '@/context/RoleContext';
 import toast from 'react-hot-toast';
 
 export default function MachinesPage() {
-  const { canManageMachines } = useAuth();
+  const { role, canEdit, canDelete } = useRole();
   const [machines, setMachines] = useState<any[]>([]);
   const [form, setForm] = useState({ machine_id: '', machine_name: '', machine_type: '', location: '', status: 'Stop' });
   const [errorMsg, setErrorMsg] = useState('');
@@ -81,8 +81,8 @@ export default function MachinesPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!canManageMachines) {
-      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล (ต้องเป็น Admin)');
+    if (!canEdit) {
+      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
       return;
     }
 
@@ -113,7 +113,7 @@ export default function MachinesPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    if (!canManageMachines) return;
+    if (!canEdit) return;
     const { error } = await supabase.from('machines').update({ status: newStatus }).eq('id', id);
     if (!error) {
       if (newStatus === 'Alarm') {
@@ -128,7 +128,7 @@ export default function MachinesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!canManageMachines) return;
+    if (!canDelete) return;
     if (confirm('ยืนยันการลบเครื่องจักรนี้?')) {
       const { error } = await supabase.from('machines').delete().eq('id', id);
       if (!error) {
@@ -188,8 +188,8 @@ export default function MachinesPage() {
           </div>
         </div>
 
-        {/* ฟอร์มเพิ่มเครื่องจักร (สงวนสิทธิ์ Admin เท่านั้น) */}
-        {canManageMachines ? (
+        {/* ฟอร์มเพิ่มเครื่องจักร */}
+        {canEdit ? (
           <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
               <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-ping" />
@@ -281,7 +281,7 @@ export default function MachinesPage() {
         ) : (
           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-400 text-xs sm:text-sm flex items-center gap-2">
             <span>🔒</span>
-            <span>สิทธิ์ของคุณ: <b>Technician</b> — ดูข้อมูลเครื่องจักรได้อย่างเดียว การเพิ่ม / แก้ไข / ลบ สงวนสิทธิ์ <b>Admin</b></span>
+            <span>คุณกำลังใช้งานในโหมด <b>Viewer</b> (ดูข้อมูลได้อย่างเดียว)</span>
           </div>
         )}
 
@@ -375,7 +375,7 @@ export default function MachinesPage() {
                         🔍 History
                       </span>
                     </Link>
-                    {canManageMachines && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(m.id)}
                         className="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-medium"
@@ -392,7 +392,7 @@ export default function MachinesPage() {
 
                   <div className="pt-1 flex items-center justify-between">
                     <span className="text-xs text-slate-500 dark:text-slate-400">สถานะ:</span>
-                    {canManageMachines ? (
+                    {canEdit ? (
                       <select
                         value={m.status}
                         onChange={(e) => handleStatusChange(m.id, e.target.value)}
@@ -456,7 +456,7 @@ export default function MachinesPage() {
                         {m.location}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        {canManageMachines ? (
+                        {canEdit ? (
                           <select
                             value={m.status}
                             onChange={(e) => handleStatusChange(m.id, e.target.value)}
@@ -482,7 +482,7 @@ export default function MachinesPage() {
                         )}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        {canManageMachines ? (
+                        {canDelete ? (
                           <button
                             onClick={() => handleDelete(m.id)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95"
