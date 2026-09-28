@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import ThemeToggle from '@/components/ThemeToggle'; // นำเข้าปุ่มสลับธีม
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,11 +31,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#0a0f1d] overflow-hidden p-4 transition-colors duration-300">
-      {/* ปุ่มสลับธีมมุมขวาบนของหน้า Login */}
-      <div className="absolute top-6 right-6 z-10">
-        <ThemeToggle />
-      </div>
-
       {/* Background Decorative Elements */}
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
