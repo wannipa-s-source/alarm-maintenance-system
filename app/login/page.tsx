@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LoaderCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
+import LogoutButton from '@/components/LogoutButton';
 
 export default function LoginPage() {
   return (
@@ -25,6 +26,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,18 +34,18 @@ function LoginForm() {
   const nextPath = searchParams.get('next');
   const safeNext = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/';
 
-  // ถ้ามี session อยู่แล้ว ไม่ต้องเข้าสู่ระบบซ้ำ
+  // เช็คว่ามี session อยู่แล้วหรือไม่ (ถ้ามีจะแสดงปุ่ม Logout ไว้กดเปลี่ยนบัญชี)
   useEffect(() => {
     let active = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (active && data.session) {
-        router.replace(safeNext);
+      if (active) {
+        setSignedIn(Boolean(data.session));
       }
     });
     return () => {
       active = false;
     };
-  }, [router, safeNext]);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +71,9 @@ function LoginForm() {
       {/* Background Decorative Elements */}
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* ปุ่มออกจากระบบ มุมขวาบน (แสดงเฉพาะตอนมี session อยู่) */}
+      {signedIn && <LogoutButton variant="ghost" className="absolute top-4 right-4 z-10" />}
 
       {/* Main Login Card */}
       <div className="relative w-full max-w-md bg-white dark:bg-[#111827]/90 backdrop-blur-xl rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-blue-900/40 p-8 sm:p-10 transition-all">

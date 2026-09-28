@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, Eye, EyeOff, IdCard, LoaderCircle, Lock, Mail, User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import LogoutButton from '@/components/LogoutButton';
 
 type Status = { type: 'idle' | 'error' | 'success'; message: string };
 
@@ -20,9 +21,23 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [status, setStatus] = useState<Status>({ type: 'idle', message: '' });
 
   const router = useRouter();
+
+  // เช็คว่ามี session อยู่แล้วหรือไม่ (ถ้ามีจะแสดงปุ่ม Logout ไว้กดเปลี่ยนบัญชี)
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) {
+        setSignedIn(Boolean(data.session));
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +84,9 @@ export default function RegisterPage() {
       {/* Background Decorative Elements */}
       <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* ปุ่มออกจากระบบ มุมขวาบน (แสดงเฉพาะตอนมี session อยู่) */}
+      {signedIn && <LogoutButton variant="ghost" className="absolute top-4 right-4 z-10" />}
 
       {/* Main Register Card */}
       <div className="relative w-full max-w-md bg-white dark:bg-[#111827]/90 backdrop-blur-xl rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-blue-900/40 p-8 sm:p-10 transition-all">

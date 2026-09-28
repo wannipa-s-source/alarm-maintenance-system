@@ -44,14 +44,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // ล็อกอินอยู่แล้วแต่พยายามเข้าหน้า Login/Register -> ส่งกลับหน้าแรก
-  if (user && isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/';
-    url.search = '';
-    return NextResponse.redirect(url);
-  }
-
+  // หมายเหตุ: ปล่อยให้ผู้ที่ล็อกอินแล้วเข้าหน้า Login/Register ได้
+  // เพื่อให้มีปุ่ม "Logout" ไว้กดเปลี่ยนบัญชีจากหน้านี้
   return response;
 }
 
