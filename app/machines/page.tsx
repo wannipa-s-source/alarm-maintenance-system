@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRole } from '@/context/RoleContext';
 import toast from 'react-hot-toast';
-import ThemeToggle from '@/components/ThemeToggle';
 
 export default function MachinesPage() {
   const { role, canEdit, canDelete } = useRole();
@@ -109,11 +108,8 @@ export default function MachinesPage() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
-            {/* ปุ่มสลับ Theme */}
-            <ThemeToggle />
-
-            {/* ปุ่ม Refresh */}
+          <div className="flex items-center justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
+            {/* ปุ่ม Refresh (ตัด ThemeToggle ออกจากหน้านี้แล้ว เหลือไว้แค่ปุ่มบน Header หลัก) */}
             <button
               onClick={fetchMachines}
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 transition-all duration-200 active:scale-95"
