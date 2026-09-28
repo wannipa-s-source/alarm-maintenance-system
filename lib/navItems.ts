@@ -1,4 +1,4 @@
-import { BellRing, Factory, House, LayoutDashboard, LogIn, Wrench } from 'lucide-react';
+import { BellRing, Factory, House, LayoutDashboard, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type NavItem = {
@@ -45,13 +45,6 @@ export const navItems: NavItem[] = [
     description: 'บันทึกงานซ่อมบำรุง ปัญหา และผลการดำเนินงาน',
     icon: Wrench,
     accent: 'text-purple-600 dark:text-purple-400',
-  },
-  {
-    href: '/login',
-    label: 'เข้าสู่ระบบ',
-    description: 'เข้าสู่ระบบด้วยบัญชีผู้ใช้งาน (Login)',
-    icon: LogIn,
-    accent: 'text-indigo-600 dark:text-indigo-400',
   },
 ];
 
