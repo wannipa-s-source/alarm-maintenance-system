@@ -10,7 +10,7 @@ const variants = {
   /** ปุ่มเต็มในแถบด้านบน (สีแดง มีคำว่า Logout) */
   solid:
     'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all active:scale-95 disabled:opacity-60',
-  /** ปุ่มเล็กสำหรับหน้า Login / Register (ไม่มีแถบเมนูรอบข้าง) */
+  /** ปุ่มเล็กสำหรับหน้า Login (ไม่มีแถบเมนูรอบข้าง) */
   ghost:
     'inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-600 dark:text-rose-400 text-sm font-semibold transition-all active:scale-95 disabled:opacity-60',
 } as const;
@@ -44,7 +44,7 @@ export default function LogoutButton({ variant = 'solid', iconOnly = false, clas
     setRole('Viewer');
     setLoggingOut(false);
 
-    // ล้าง cache ของ Next.js เพื่อไม่ให้เห็นข้อมูลของผู้ใช้เดิมค้างอยู่
+    // พากลับไปหน้า Login และล้าง cache ของ Next.js ไม่ให้เห็นข้อมูลของผู้ใช้เดิมค้างอยู่
     router.replace('/login');
     router.refresh();
   };

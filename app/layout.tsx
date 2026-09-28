@@ -4,7 +4,7 @@ import { RoleProvider } from "@/context/RoleContext";
 import { Toaster } from "react-hot-toast";
 import NotificationListener from "@/components/NotificationListener";
 import { Providers } from "./providers";
-import AppHeader from "@/components/AppHeader"; // Header + เมนู (ซ่อนอัตโนมัติบนหน้า Login / Register)
+import AppHeader from "@/components/AppHeader"; // Header + เมนู (ซ่อนอัตโนมัติบนหน้า Login)
 
 export const metadata: Metadata = {
   title: "Smart Factory Maintenance System",

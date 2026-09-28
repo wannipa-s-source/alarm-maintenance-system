@@ -9,8 +9,8 @@ import NotificationBell from '@/components/NotificationBell';
 import UserBadge from '@/components/UserBadge';
 import LogoutButton from '@/components/LogoutButton';
 
-/** หน้าที่ไม่ต้องแสดงแถบเมนูด้านบน (หน้า Login / Register) */
-const BARE_ROUTES = ['/login', '/register'];
+/** หน้าที่ไม่ต้องแสดงแถบเมนูด้านบน (หน้า Login) */
+const BARE_ROUTES = ['/login'];
 
 function isBareRoute(pathname: string): boolean {
   return BARE_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -18,7 +18,7 @@ function isBareRoute(pathname: string): boolean {
 
 /**
  * แถบด้านบนของระบบ (โลโก้ + การแจ้งเตือน + สลับธีม + โปรไฟล์ + สลับบทบาท) และแถบเมนูนำทาง
- * จะไม่แสดงบนหน้า Login / Register เพื่อให้หน้าเหล่านั้นแสดงเฉพาะฟอร์มเข้าสู่ระบบ
+ * จะไม่แสดงบนหน้า Login เพื่อให้หน้าเหล่านั้นแสดงเฉพาะฟอร์มเข้าสู่ระบบ
  */
 export default function AppHeader() {
   const pathname = usePathname();

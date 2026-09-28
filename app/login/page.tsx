@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { LoaderCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -160,16 +159,6 @@ function LoginForm() {
             )}
           </button>
         </form>
-
-        {/* ลิงก์ไปหน้าสมัครสมาชิก */}
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            ยังไม่มีบัญชี?{' '}
-            <Link href="/register" className="font-semibold text-blue-600 dark:text-cyan-400 hover:underline">
-              สมัครสมาชิก
-            </Link>
-          </p>
-        </div>
 
         {/* Footer info */}
         <p className="text-xs text-center text-slate-400 mt-8">

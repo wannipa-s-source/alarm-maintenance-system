@@ -2,8 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabaseConfig';
 
-/** เฉพาะหน้าเข้าสู่ระบบกับสมัครสมาชิกที่เข้าถึงได้โดยไม่ต้องล็อกอิน */
-const PUBLIC_ROUTES = ['/login', '/register'];
+/** เฉพาะหน้าเข้าสู่ระบบที่เข้าถึงได้โดยไม่ต้องล็อกอิน */
+const PUBLIC_ROUTES = ['/login'];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // หมายเหตุ: ปล่อยให้ผู้ที่ล็อกอินแล้วเข้าหน้า Login/Register ได้
+  // หมายเหตุ: ปล่อยให้ผู้ที่ล็อกอินแล้วเข้าหน้า Login ได้
   // เพื่อให้มีปุ่ม "Logout" ไว้กดเปลี่ยนบัญชีจากหน้านี้
   return response;
 }
