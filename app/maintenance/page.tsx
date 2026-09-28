@@ -10,6 +10,11 @@ export default function MaintenancePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Search & Filter States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -49,6 +54,33 @@ export default function MaintenancePage() {
     await supabase.from('maintenance_records').update({ status: newStatus }).eq('id', id);
     fetchData();
   };
+
+  // ฟังก์ชันรีเซ็ตตัวกรองทั้งหมด
+  const handleResetFilter = () => {
+    setSearchTerm('');
+    setTypeFilter('All');
+    setStatusFilter('All');
+  };
+
+  // กรองข้อมูล Records ตามคำค้นหา, ประเภทงานซ่อม และสถานะ
+  const filteredRecords = records.filter((r) => {
+    const machineIdStr = r.machines?.machine_id?.toLowerCase() || '';
+    const machineNameStr = r.machines?.machine_name?.toLowerCase() || '';
+    const problemStr = r.problem?.toLowerCase() || '';
+    const actionStr = r.action_taken?.toLowerCase() || '';
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch = 
+      machineIdStr.includes(search) || 
+      machineNameStr.includes(search) || 
+      problemStr.includes(search) || 
+      actionStr.includes(search);
+
+    const matchesType = typeFilter === 'All' || r.maintenance_type === typeFilter;
+    const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 p-6 md:p-10 relative overflow-hidden font-sans transition-colors duration-300">
@@ -169,6 +201,65 @@ export default function MaintenancePage() {
           </div>
         </form>
 
+        {/* ส่วนค้นหา และ ตัวกรอง (Search & Filters Section) */}
+        <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          
+          {/* ช่องค้นหา */}
+          <div className="w-full md:flex-1 relative">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="ค้นหาจากอาการปัญหา (Problem), วิธีการแก้ไข (Action Taken) หรือรหัสเครื่องจักร..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition"
+            />
+          </div>
+
+          {/* ตัวกรองและปุ่มรีเซ็ต */}
+          <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3">
+            {/* กรองประเภทงานซ่อม */}
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="w-full sm:w-44 bg-slate-100 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition cursor-pointer"
+            >
+              <option value="All">ทุกประเภท (All Types)</option>
+              <option value="Preventive">Preventive (PM)</option>
+              <option value="Corrective">Corrective (CM)</option>
+              <option value="Breakdown">Breakdown</option>
+            </select>
+
+            {/* กรองสถานะ */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-44 bg-slate-100 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition cursor-pointer"
+            >
+              <option value="All">ทุกสถานะ (All Status)</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            {/* ปุ่มรีเซ็ต */}
+            <button
+              onClick={handleResetFilter}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700 transition-all duration-200 active:scale-95 whitespace-nowrap"
+              title="ล้างตัวกรอง"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>รีเซ็ต</span>
+            </button>
+          </div>
+        </div>
+
         {/* ตารางแสดงรายการ Maintenance */}
         <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-blue-900/40 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -184,14 +275,14 @@ export default function MaintenancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
-                {records.length === 0 ? (
+                {filteredRecords.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-slate-500">
-                      ไม่พบประวัติการทำ Maintenance ในระบบ
+                      ไม่พบประวัติการทำ Maintenance ที่ตรงกับเงื่อนไขการค้นหา
                     </td>
                   </tr>
                 ) : (
-                  records.map((r) => (
+                  filteredRecords.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="p-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {new Date(r.created_at).toLocaleDateString('th-TH')}
