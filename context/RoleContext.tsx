@@ -20,6 +20,8 @@ interface RoleContextType {
   user: SupabaseUser | null;
   /** true ระหว่างที่ยังไม่รู้บทบาท — UI ควรซ่อนปุ่มแก้ไขระหว่างนี้ */
   loading: boolean;
+  /** ข้อความ error ถ้าโหลดบทบาทจากตาราง profiles ไม่สำเร็จ (เช่น ยังไม่ได้รัน migration) */
+  error: string | null;
   /** ตรวจสอบสิทธิ์แบบทั่วไป เช่น can('editMachines') */
   can: (permission: Permission) => boolean;
   /** โหลดบทบาทใหม่จากฐานข้อมูล (ใช้หลัง logout หรือหลังบทบาทถูกเปลี่ยน) */
@@ -39,6 +41,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const loadRole = useCallback(async () => {
     const {
@@ -48,17 +51,29 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     if (!currentUser) {
       setUser(null);
       setProfile(null);
+      setError(null);
       setLoading(false);
       return;
     }
 
     setUser(currentUser);
 
-    const { data } = await supabase
+    const { data, error: queryError } = await supabase
       .from('profiles')
       .select('id, email, full_name, role')
       .eq('id', currentUser.id)
       .maybeSingle();
+
+    if (queryError) {
+      console.error(
+        '[RoleContext] โหลดบทบาทจากตาราง public.profiles ไม่สำเร็จ — ' +
+          'ระบบจะถือว่าเป็นผู้ชม (viewer) จนกว่าจะติดตั้งฐานข้อมูล:',
+        queryError.message
+      );
+      setError(queryError.message);
+    } else {
+      setError(null);
+    }
 
     const fullName =
       (typeof data?.full_name === 'string' && data.full_name.trim()) ||
@@ -114,10 +129,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       profile,
       user,
       loading,
+      error,
       can: check,
       refresh: loadRole,
     };
-  }, [profile, user, loading, loadRole]);
+  }, [profile, user, loading, error, loadRole]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 }
