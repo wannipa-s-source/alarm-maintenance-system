@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle'; // นำเข้าปุ่มสลับธีม
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -30,17 +31,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900 overflow-hidden p-4 transition-colors duration-300">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#0a0f1d] overflow-hidden p-4 transition-colors duration-300">
+      {/* ปุ่มสลับธีมมุมขวาบนของหน้า Login */}
+      <div className="absolute top-6 right-6 z-10">
+        <ThemeToggle />
+      </div>
+
       {/* Background Decorative Elements */}
-      <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Login Card */}
-      <div className="relative w-full max-w-md bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/70 p-8 sm:p-10 transition-all">
+      <div className="relative w-full max-w-md bg-white dark:bg-[#111827]/90 backdrop-blur-xl rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-blue-900/40 p-8 sm:p-10 transition-all">
         
         {/* Header Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 dark:bg-blue-500/15 rounded-2xl mb-4 text-blue-600 dark:text-blue-400 shadow-inner">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-50 dark:bg-blue-500/20 rounded-2xl mb-4 text-blue-600 dark:text-cyan-400 shadow-inner border border-blue-100 dark:border-blue-500/30">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
