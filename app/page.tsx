@@ -2,12 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Activity, Gauge, LayoutGrid, RefreshCw } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
-import { useRole } from '@/context/RoleContext';
-import { ROLE_META } from '@/lib/permissions';
 import {
   ALL,
   buildKpis,
@@ -38,9 +34,6 @@ const initialFilters: DashboardFilters = {
 
 /** หน้าแรก (Home / Dashboard) — ศูนย์ควบคุมสถานะเครื่องจักรทั้งระบบ */
 export default function HomePage() {
-  const { role, canEdit } = useRole();
-  const router = useRouter();
-
   const [machines, setMachines] = useState<Machine[]>([]);
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
@@ -96,15 +89,6 @@ export default function HomePage() {
       cancelled = true;
     };
   }, [fetchAll]);
-
-  // แจ้งเตือนเมื่อถูก proxy.ts ส่งกลับมาเพราะบทบาทไม่มีสิทธิ์เข้าถึงหน้าที่พยายามเปิด
-  useEffect(() => {
-    const deniedPath = new URLSearchParams(window.location.search).get('denied');
-    if (!deniedPath) return;
-
-    toast.error(`บทบาท "${ROLE_META[role].label}" ไม่มีสิทธิ์เข้าถึงหน้า ${deniedPath}`);
-    router.replace('/', { scroll: false });
-  }, [role, router]);
 
   /* ------------------------------------------------------------
      ข้อมูลประกอบ: แผนที่ machine_id -> ชื่อเครื่อง สำหรับตารางงานซ่อม
@@ -227,10 +211,6 @@ export default function HomePage() {
      การกระทำ
      ------------------------------------------------------------ */
   const openRequestModal = (machineId?: string) => {
-    if (!canEdit) {
-      toast.error(`บทบาท "${ROLE_META[role].label}" ไม่มีสิทธิ์สร้างใบแจ้งซ่อม`);
-      return;
-    }
     setRequestMachineId(machineId);
     setRequestOpen(true);
   };
@@ -337,7 +317,6 @@ export default function HomePage() {
           machines={filteredMachines}
           totalCount={machines.length}
           onQuickRequest={(machine) => openRequestModal(machine.id)}
-          canRequest={canEdit}
         />
 
         {/* ========== ส่วนที่ 4: Alarm & Maintenance Trends ========== */}
@@ -347,7 +326,7 @@ export default function HomePage() {
         <RecentActivityTable records={filteredRecords} totalCount={records.length} />
 
         {/* ========== ส่วนที่ 5: Quick Action Floating Bar ========== */}
-        <QuickActionBar onNewLog={() => openRequestModal()} onExport={handleExport} canCreate={canEdit} />
+        <QuickActionBar onNewLog={() => openRequestModal()} onExport={handleExport} />
 
         {/* ลิงก์เข้าสู่หน้าย่อยของระบบ */}
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2">

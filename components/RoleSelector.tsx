@@ -1,0 +1,31 @@
+'use client';
+
+import { Eye, Shield, Wrench } from 'lucide-react';
+import { useRole, UserRole } from '@/context/RoleContext';
+
+export default function RoleSelector() {
+  const { role, setRole } = useRole();
+
+  return (
+    <div className="hidden md:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 pl-2">Role:</span>
+      {(['Admin', 'Operator', 'Viewer'] as UserRole[]).map((r) => (
+        <button
+          key={r}
+          onClick={() => setRole(r)}
+          aria-pressed={role === r}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition flex items-center gap-1 ${
+            role === r
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+          }`}
+        >
+          {r === 'Admin' && <Shield className="w-3 h-3" />}
+          {r === 'Operator' && <Wrench className="w-3 h-3" />}
+          {r === 'Viewer' && <Eye className="w-3 h-3" />}
+          {r}
+        </button>
+      ))}
+    </div>
+  );
+}

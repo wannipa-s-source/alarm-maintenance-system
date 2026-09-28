@@ -5,7 +5,6 @@ import { LoaderCircle, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { maintenanceTypeOptions, type Machine } from '@/lib/dashboard';
-import { useRole } from '@/context/RoleContext';
 
 type Props = {
   open: boolean;
@@ -37,10 +36,8 @@ export default function MaintenanceRequestModal({
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const { canEdit } = useRole();
 
-  // ผู้ชมไม่มีสิทธิ์สร้างใบแจ้งซ่อม (ปุ่มถูกซ่อนไปแล้วที่หน้าที่เรียกใช้)
-  if (!open || !canEdit) return null;
+  if (!open) return null;
 
   const field =
     'w-full px-3 py-2.5 rounded-xl text-sm bg-white dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500 transition-colors';
@@ -56,11 +53,6 @@ export default function MaintenanceRequestModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-
-    if (!canEdit) {
-      setErrorMsg('คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
-      return;
-    }
 
     if (!selectedMachineId) {
       setErrorMsg('กรุณาเลือกเครื่องจักรที่ต้องการแจ้งซ่อม');

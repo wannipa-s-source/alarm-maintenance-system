@@ -23,10 +23,10 @@ type LogoutButtonProps = {
 };
 
 /**
- * ปุ่มออกจากระบบ: ล้าง session ของ Supabase แล้วพากลับไปหน้า Login
+ * ปุ่มออกจากระบบ: ล้าง session ของ Supabase, รีเซ็ตบทบาท แล้วพากลับไปหน้า Login
  */
 export default function LogoutButton({ variant = 'solid', iconOnly = false, className = '' }: LogoutButtonProps) {
-  const { refresh } = useRole();
+  const { setRole } = useRole();
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
 
@@ -37,11 +37,11 @@ export default function LogoutButton({ variant = 'solid', iconOnly = false, clas
       // ล้าง session ของ Supabase Auth อย่างสมบูรณ์
       await supabase.auth.signOut();
     } catch {
-      // ข้ามไป เพราะระบบควบคุมหน้าจอด้วย proxy.ts และ RoleContext เป็นหลัก
+      // ข้ามไป เพราะระบบควบคุมหน้าจอด้วย RoleContext เป็นหลัก
     }
 
-    // ล้างบทบาทที่ค้างอยู่ในหน่วยความจำ แล้วพากลับหน้า Login
-    await refresh();
+    // รีเซ็ตบทบาทกลับเป็นค่าเริ่มต้น
+    setRole('Viewer');
     setLoggingOut(false);
 
     // พากลับไปหน้า Login และล้าง cache ของ Next.js ไม่ให้เห็นข้อมูลของผู้ใช้เดิมค้างอยู่
