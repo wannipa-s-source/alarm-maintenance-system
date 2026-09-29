@@ -53,10 +53,18 @@ export const CONTROL = {
     'bg-chrome-raised border-rose-300 text-rose-600 hover:bg-chrome-outline hover:text-rose-500 dark:border-rose-500 dark:text-rose-400 dark:hover:text-rose-300',
 } as const;
 
+/**
+ * สีพื้นของโลโก้ Smart Factory (กล่องไฟฟ้าสายฟ้าในแถบ Header)
+ * ประกาศไว้ที่ app/globals.css ว่า --color-brand
+ * ใช้เป็น "สีหลักของระบบ" ร่วมกัน ทั้งโลโก้, แถบ Role Notice และป้ายบทบาทใน Header
+ * เพื่อให้ทั้ง 3 ส่วนใช้สีเดียวกันเสมอ (แก้ที่ token เดียวจบ)
+ */
+export const LOGO_SURFACE = 'bg-brand';
+
 /** โลโก้และชื่อระบบในแถบ Header */
 export const BRANDMARK = {
-  /** กล่องโลโก้: พื้น brand ทึบ ไม่มี gradient (สีเดียวกันทั้งสองโหมด) */
-  box: 'w-8 h-8 rounded-lg bg-brand border border-brand-hover text-white flex items-center justify-center shrink-0',
+  /** กล่องโลโก้: พื้นสีเดียวกับ Role Notice / ป้ายบทบาท, ไม่มี gradient */
+  box: `w-8 h-8 rounded-lg ${LOGO_SURFACE} border border-brand-hover text-white flex items-center justify-center shrink-0`,
   /** ชื่อระบบ: สีทึบ ไม่มี gradient */
   title: 'text-sm sm:text-base md:text-lg font-extrabold text-chrome-text',
   /** ชื่อระบบย่อย */
@@ -64,14 +72,14 @@ export const BRANDMARK = {
 } as const;
 
 /**
- * สีประจำบทบาท — ใช้สีเดียวกันทุกบทบาท (Admin / Technician / Viewer)
- * ใช้ทั้งกับ "แถบ Role Notice" และ "ป้ายบทบาทใน Header" ให้ตรงกันทั้ง 6 จุด
+ * สีประจำบทบาท — ใช้สีเดียวกับโลโก้ Smart Factory ทุกบทบาท (Admin / Technician / Viewer)
+ * ครอบคลุม 2 จุด: "แถบ Role Notice" และ "ป้ายบทบาทใน Header" = ทั้งหมด 6 จุด
  * พื้นเป็นสีทึบ ไม่มี gradient / transparency / opacity และตัวอักษร+จุดเป็นสีขาว
  */
 export const ROLE_COLOR = {
-  /** พื้นของแถบ Role Notice และพื้นของป้ายบทบาท (เหมือนกันทุก Role) */
-  surface: 'bg-role',
-  /** ตัวอักษรและจุดนำหน้าในป้ายบทบาท */
+  /** พื้นของแถบ Role Notice และพื้นของป้ายบทบาท (อ้างสีเดียวกับโลโก้) */
+  surface: LOGO_SURFACE,
+  /** ตัวอักษร/ไอคอน และข้อความในวงเล็บของป้ายบทบาท */
   on: 'text-white',
   /** จุดกลมขนาดเล็กในป้ายบทบาท */
   dot: 'bg-white',
