@@ -65,9 +65,17 @@ export const BRANDMARK = {
   subtitle: 'hidden sm:block text-[10px] md:text-[11px] font-semibold tracking-wide text-chrome-muted',
 } as const;
 
-/** สีประจำบทบาทที่ใช้กับ Role Notice และป้ายบทบาทใน Header */
-export const ROLE_UI: Record<UserRole, { bar: string; chip: string; dot: string }> = {
-  admin: { bar: 'bg-role-admin', chip: 'bg-role-admin text-white', dot: 'bg-white' },
-  technician: { bar: 'bg-role-technician', chip: 'bg-role-technician text-white', dot: 'bg-white' },
-  viewer: { bar: 'bg-role-viewer', chip: 'bg-role-viewer text-white', dot: 'bg-white' },
+/** สีประจำบทบาทที่ใช้กับป้ายบทบาทใน Header */
+export const ROLE_UI: Record<UserRole, { chip: string; dot: string }> = {
+  admin: { chip: 'bg-role-admin text-white', dot: 'bg-white' },
+  technician: { chip: 'bg-role-technician text-white', dot: 'bg-white' },
+  viewer: { chip: 'bg-role-viewer text-white', dot: 'bg-white' },
 };
+
+/**
+ * แถบ Role Notice — ใช้สีพื้นเดียวกันทุกบทบาท (ไม่ขึ้นกับ Role)
+ * พื้นเป็นสีทึบ เต็มพื้นที่แถบ ไม่มี gradient / transparency / opacity
+ */
+export const ROLE_NOTICE = {
+  bar: 'bg-role-notice text-white',
+} as const;

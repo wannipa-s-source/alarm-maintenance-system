@@ -68,10 +68,13 @@
   /* ตัวอักษรรองบนพื้นสี brand */
   --color-brand-soft: #dbeafe;
 
-  /* สีประจำบทบาท (ใช้กับ Role Notice และป้ายบทบาทใน Header) — ค่าตามสเปกที่กำหนด */
+  /* สีประจำบทบาท (ใช้กับป้ายบทบาทใน Header) — ค่าตามสเปกที่กำหนด */
   --color-role-admin: #1f320d;
   --color-role-technician: #9b0d0d;
   --color-role-viewer: #0d7f86;
+
+  /* สีพื้นหลังของแถบ Role Notice — ใช้สีเดียวกันทุกบทบาท */
+  --color-role-notice: #f0bb65;
 }
 
 @media (prefers-color-scheme: dark) {

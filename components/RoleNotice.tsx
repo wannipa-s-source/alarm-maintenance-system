@@ -3,20 +3,21 @@
 import { Lock, ShieldCheck, Wrench } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { ROLE_META, type UserRole } from '@/lib/permissions';
-import { ROLE_UI } from '@/lib/designSystem';
+import { ROLE_NOTICE } from '@/lib/designSystem';
 
-/** ไอคอนประจำบทบาท (สีพื้นหลังมาจาก ROLE_UI — โทนเดียวกับ Header และ Navigation) */
-const NOTICE_STYLE: Record<UserRole, { icon: typeof Lock; bar: string }> = {
-  admin: { icon: ShieldCheck, bar: ROLE_UI.admin.bar },
-  technician: { icon: Wrench, bar: ROLE_UI.technician.bar },
-  viewer: { icon: Lock, bar: ROLE_UI.viewer.bar },
+/** ไอคอนประจำบทบาท (สีพื้นหลังของแถบใช้สีเดียวกันทุก Role — ดู ROLE_NOTICE) */
+const NOTICE_ICON: Record<UserRole, typeof Lock> = {
+  admin: ShieldCheck,
+  technician: Wrench,
+  viewer: Lock,
 };
 
 /**
  * แถบแจ้งสิทธิ์ใต้ Header — แสดงข้อความของ "บทบาทจริง" ที่อ่านมาจากฐานข้อมูล
  *
- * หน้าตา: พื้นหลังเป็นสีทึบเต็มพื้นที่ตามสีประจำบทบาท (ROLE_UI) ไม่มีความโปร่งใส
- * ตัวอักษรและไอคอนเป็นสีขาวทั้งธีมสว่างและธีมมืด เพื่อให้อ่านได้ชัดบนพื้นเข้ม
+ * หน้าตา: พื้นหลังเป็นสีทึบเต็มพื้นที่แถบ สีเดียวกันทุกบทบาท (ROLE_NOTICE = #F0BB65)
+ * ไม่มีความโปร่งใส ไม่มี gradient ไม่มี opacity
+ * ตัวอักษรและไอคอนเป็นสีขาวทั้งธีมสว่างและธีมมืด
  * เส้นคั่น/เงาเป็นสีทึบที่เปลี่ยนตามโหมด (var(--role-line) / var(--role-shadow))
  *
  * แสดงเฉพาะเมื่อ (1) ล็อกอินแล้ว (2) โหลดบทบาทสำเร็จ (3) ทราบบทบาทแล้ว
@@ -28,13 +29,13 @@ export default function RoleNotice() {
 
   if (loading || !user || error || !resolvedRole) return null;
 
-  const { icon: Icon, bar } = NOTICE_STYLE[resolvedRole];
+  const Icon = NOTICE_ICON[resolvedRole];
   const notice = ROLE_META[resolvedRole].notice;
 
   return (
     <div
       role="status"
-      className={`flex items-center gap-2.5 w-full px-4 sm:px-6 py-2.5 border-b border-role-line shadow-[var(--role-shadow)] text-xs sm:text-sm font-medium text-white ${bar}`}
+      className={`flex items-center gap-2.5 w-full px-4 sm:px-6 py-2.5 border-b border-role-line shadow-[var(--role-shadow)] text-xs sm:text-sm font-medium text-white ${ROLE_NOTICE.bar}`}
     >
       <Icon className="w-4 h-4 shrink-0 text-white" strokeWidth={2.25} />
       <span className="text-white">{notice}</span>
