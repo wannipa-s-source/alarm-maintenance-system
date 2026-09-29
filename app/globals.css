@@ -71,7 +71,8 @@
   /* สีประจำบทบาท (ใช้กับ Role Notice และป้ายบทบาทใน Header) */
   --color-role-admin: #4f46e5;
   --color-role-technician: #0284c7;
-  --color-role-viewer: #ea580c;
+  /* Viewer = เขียวขี้ม้า (Dark Olive Green) */
+  --color-role-viewer: #556b2f;
 }
 
 @media (prefers-color-scheme: dark) {
