@@ -62,7 +62,7 @@ export default function UserBadge() {
   );
 }
 
-/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล (สีทึบตามสีประจำบทบาท) */
+/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล (สีทึบตามสีประจำบทบาท) — ข้อความทุกส่วนเป็นสีขาว */
 function RolePill({ role }: { role: NonNullable<ReturnType<typeof useRole>['resolvedRole']> }) {
   const meta = ROLE_META[role];
   const ui = ROLE_UI[role];
@@ -73,8 +73,8 @@ function RolePill({ role }: { role: NonNullable<ReturnType<typeof useRole>['reso
       title={meta.description}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} />
-      {meta.title}
-      <span className="font-mono text-slate-700 dark:text-slate-200">({role})</span>
+      <span className="text-white">{meta.title}</span>
+      <span className="font-mono text-white">({role})</span>
     </span>
   );
 }
