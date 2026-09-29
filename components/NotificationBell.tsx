@@ -12,6 +12,7 @@ import {
   type Machine,
   type MaintenanceRecord,
 } from '@/lib/dashboard';
+import { CONTROL } from '@/lib/designSystem';
 
 const levelStyle: Record<DashboardNotification['level'], { ring: string; badge: string; Icon: typeof Info }> = {
   critical: {
@@ -91,12 +92,12 @@ export default function NotificationBell() {
         onClick={toggle}
         aria-label="การแจ้งเตือน"
         aria-expanded={open}
-        className="relative inline-flex items-center justify-center w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-cyan-500 transition-all active:scale-95"
+        className={`relative inline-flex items-center justify-center w-9 h-9 rounded-xl ${CONTROL.shape} ${CONTROL.default} hover:text-cyan-300`}
       >
         {criticalCount > 0 ? (
           <>
             <BellDot className="w-4 h-4 text-rose-500" />
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white dark:border-[#111827]">
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-navy">
               {criticalCount}
             </span>
           </>

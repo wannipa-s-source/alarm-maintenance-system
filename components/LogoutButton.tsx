@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { LoaderCircle, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRole } from '@/context/RoleContext';
+import { CONTROL } from '@/lib/designSystem';
 
 const variants = {
-  /** ปุ่มเต็มในแถบด้านบน (สีแดง มีคำว่า Logout) */
-  solid:
-    'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all active:scale-95 disabled:opacity-60',
+  /** ปุ่มเต็มในแถบด้านบน (พื้น navy แบบทึบ ตัวอักษรสีแดงอ่อน) */
+  solid: `inline-flex items-center gap-1.5 px-3 py-2 rounded-xl ${CONTROL.shape} ${CONTROL.danger} text-xs font-bold active:scale-95 disabled:opacity-60`,
   /** ปุ่มเล็กสำหรับหน้า Login (ไม่มีแถบเมนูรอบข้าง) */
   ghost:
     'inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-600 dark:text-rose-400 text-sm font-semibold transition-all active:scale-95 disabled:opacity-60',

@@ -3,6 +3,7 @@
 import { HardHat, LoaderCircle, TriangleAlert } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { ROLE_META } from '@/lib/permissions';
+import { ROLE_UI } from '@/lib/designSystem';
 
 /** ชื่อสำรองกรณียังไม่ได้โหลดข้อมูลผู้ใช้ */
 const fallbackName = 'ผู้ใช้งานระบบ';
@@ -29,13 +30,13 @@ export default function UserBadge() {
     (profile?.email ? shortenEmail(profile.email) : fallbackName);
 
   return (
-    <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-700/70">
+    <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-navy-raised">
       <div className="hidden sm:flex flex-col items-end leading-tight">
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{displayName}</span>
+        <span className="text-xs font-bold text-navy-text">{displayName}</span>
 
         {loading ? (
           <span
-            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold"
+            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-navy-outline text-navy-muted text-[10px] font-bold"
             title="กำลังโหลดบทบาทจากฐานข้อมูล"
           >
             <LoaderCircle className="w-2.5 h-2.5 animate-spin" />
@@ -43,7 +44,7 @@ export default function UserBadge() {
           </span>
         ) : error || !resolvedRole ? (
           <span
-            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold"
+            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-amber-500 bg-amber-500 text-slate-900 text-[10px] font-bold"
             title={`อ่านบทบาทไม่สำเร็จ: ${error ?? 'ไม่พบข้อมูลโปรไฟล์'} — กรุณารันไฟล์ supabase/migrations/20260929000000_reconcile_rbac_schema.sql ใน Supabase SQL Editor`}
           >
             <TriangleAlert className="w-2.5 h-2.5" />
@@ -54,25 +55,26 @@ export default function UserBadge() {
         )}
       </div>
 
-      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 border border-blue-500/30 dark:border-cyan-500/30 flex items-center justify-center text-blue-600 dark:text-cyan-400 shrink-0">
+      <div className="w-9 h-9 rounded-xl bg-brand border border-brand-hover flex items-center justify-center text-white shrink-0">
         <HardHat className="w-4.5 h-4.5" />
       </div>
     </div>
   );
 }
 
-/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล */
+/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล (สีทึบตามสีประจำบทบาท) */
 function RolePill({ role }: { role: NonNullable<ReturnType<typeof useRole>['resolvedRole']> }) {
   const meta = ROLE_META[role];
+  const ui = ROLE_UI[role];
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border text-[10px] font-bold ${meta.badge}`}
+      className={`inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${ui.chip}`}
       title={meta.description}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} />
       {meta.title}
-      <span className="font-mono opacity-70">({role})</span>
+      <span className="font-mono text-slate-200">({role})</span>
     </span>
   );
 }

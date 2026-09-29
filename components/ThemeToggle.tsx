@@ -2,6 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { CONTROL } from '@/lib/designSystem';
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -19,7 +20,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition-all duration-200"
+      className={`p-2 ${CONTROL.shape} ${CONTROL.default}`}
       title="สลับธีม"
       type="button"
     >
@@ -30,7 +31,7 @@ export default function ThemeToggle() {
         </svg>
       ) : (
         /* ไอคอนดวงจันทร์ (สำหรับโหมดมืด) */
-        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
         </svg>
       )}
