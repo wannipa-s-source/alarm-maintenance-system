@@ -1,5 +1,3 @@
-import type { UserRole } from '@/lib/permissions';
-
 /**
  * Design System ของ "โครงหน้าเว็บ" — Header, Navigation Bar และ Role Notice
  *
@@ -65,17 +63,16 @@ export const BRANDMARK = {
   subtitle: 'hidden sm:block text-[10px] md:text-[11px] font-semibold tracking-wide text-chrome-muted',
 } as const;
 
-/** สีประจำบทบาทที่ใช้กับป้ายบทบาทใน Header */
-export const ROLE_UI: Record<UserRole, { chip: string; dot: string }> = {
-  admin: { chip: 'bg-role-admin text-white', dot: 'bg-white' },
-  technician: { chip: 'bg-role-technician text-white', dot: 'bg-white' },
-  viewer: { chip: 'bg-role-viewer text-white', dot: 'bg-white' },
-};
-
 /**
- * แถบ Role Notice — ใช้สีพื้นเดียวกันทุกบทบาท (ไม่ขึ้นกับ Role)
- * พื้นเป็นสีทึบ เต็มพื้นที่แถบ ไม่มี gradient / transparency / opacity
+ * สีประจำบทบาท — ใช้สีเดียวกันทุกบทบาท (Admin / Technician / Viewer)
+ * ใช้ทั้งกับ "แถบ Role Notice" และ "ป้ายบทบาทใน Header" ให้ตรงกันทั้ง 6 จุด
+ * พื้นเป็นสีทึบ ไม่มี gradient / transparency / opacity และตัวอักษร+จุดเป็นสีขาว
  */
-export const ROLE_NOTICE = {
-  bar: 'bg-role-notice text-white',
+export const ROLE_COLOR = {
+  /** พื้นของแถบ Role Notice และพื้นของป้ายบทบาท (เหมือนกันทุก Role) */
+  surface: 'bg-role',
+  /** ตัวอักษรและจุดนำหน้าในป้ายบทบาท */
+  on: 'text-white',
+  /** จุดกลมขนาดเล็กในป้ายบทบาท */
+  dot: 'bg-white',
 } as const;

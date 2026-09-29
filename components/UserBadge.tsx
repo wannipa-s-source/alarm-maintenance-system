@@ -3,7 +3,7 @@
 import { HardHat, LoaderCircle, TriangleAlert } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { ROLE_META } from '@/lib/permissions';
-import { ROLE_UI } from '@/lib/designSystem';
+import { ROLE_COLOR } from '@/lib/designSystem';
 
 /** ชื่อสำรองกรณียังไม่ได้โหลดข้อมูลผู้ใช้ */
 const fallbackName = 'ผู้ใช้งานระบบ';
@@ -62,19 +62,18 @@ export default function UserBadge() {
   );
 }
 
-/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล (สีทึบตามสีประจำบทบาท) — ข้อความทุกส่วนเป็นสีขาว */
+/** ป้ายบทบาทจริงตามที่อ่านมาจากฐานข้อมูล (พื้นสีทึบเดียวกับ Role Notice) — ข้อความทุกส่วนเป็นสีขาว */
 function RolePill({ role }: { role: NonNullable<ReturnType<typeof useRole>['resolvedRole']> }) {
   const meta = ROLE_META[role];
-  const ui = ROLE_UI[role];
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${ui.chip}`}
+      className={`inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${ROLE_COLOR.surface} ${ROLE_COLOR.on}`}
       title={meta.description}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} />
-      <span className="text-white">{meta.title}</span>
-      <span className="font-mono text-white">({role})</span>
+      <span className={`w-1.5 h-1.5 rounded-full ${ROLE_COLOR.dot}`} />
+      <span className={ROLE_COLOR.on}>{meta.title}</span>
+      <span className={`font-mono ${ROLE_COLOR.on}`}>({role})</span>
     </span>
   );
 }
