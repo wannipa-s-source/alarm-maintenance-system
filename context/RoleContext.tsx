@@ -3,7 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { can, normalizeRole, type Permission, type UserRole } from '@/lib/permissions';
+import { can, effectiveRole, parseRole, type Permission, type UserRole } from '@/lib/permissions';
 
 export type { Permission, UserRole } from '@/lib/permissions';
 
@@ -11,16 +11,20 @@ export type Profile = {
   id: string;
   email: string | null;
   full_name: string | null;
-  role: UserRole;
+  /** null = ยังอ่านบทบาทไม่ได้ (ไม่ใช่กรณีที่บทบาทคือ viewer) */
+  role: UserRole | null;
 };
 
 interface RoleContextType {
+  /** บทบาทที่ใช้ตัดสินสิทธิ์ — ถ้ายังไม่ทราบจริงจะเป็น 'viewer' (fail-closed) */
   role: UserRole;
+  /** บทบาทจริงจากฐานข้อมูล — null เมื่อยังโหลดไม่ได้ ยังไม่ควรแสดงเป็น Viewer */
+  resolvedRole: UserRole | null;
   profile: Profile | null;
   user: SupabaseUser | null;
   /** true ระหว่างที่ยังไม่รู้บทบาท — UI ควรซ่อนปุ่มแก้ไขระหว่างนี้ */
   loading: boolean;
-  /** ข้อความ error ถ้าโหลดบทบาทจากตาราง profiles ไม่สำเร็จ (เช่น ยังไม่ได้รัน migration) */
+  /** ข้อความ error ถ้าโหลดบทบาทจากตาราง profiles ไม่สำเร็จ */
   error: string | null;
   /** ตรวจสอบสิทธิ์แบบทั่วไป เช่น can('editMachines') */
   can: (permission: Permission) => boolean;
@@ -29,9 +33,6 @@ interface RoleContextType {
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
-
-/** ผู้ใช้ที่ยังไม่ล็อกอิน/ยังโหลดไม่เสร็จ จะถือว่าเป็นผู้ชมอย่างเดียว (ปลอดภัยที่สุด) */
-const EMPTY_PROFILE: Profile = { id: '', email: null, full_name: null, role: 'viewer' };
 
 /**
  * ที่มาของบทบาทคือตาราง `profiles` ใน Supabase (ผูกกับ auth.users ด้วย trigger)
@@ -84,7 +85,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       id: currentUser.id,
       email: data?.email ?? currentUser.email ?? null,
       full_name: fullName || null,
-      role: normalizeRole(data?.role),
+      // null = ยังไม่ทราบบทบาทจริง (ไม่ใช่ "เป็น viewer")
+      role: parseRole(data?.role),
     });
     setLoading(false);
   }, []);
@@ -121,11 +123,15 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   }, [loadRole]);
 
   const value = useMemo<RoleContextType>(() => {
-    const role = profile?.role ?? EMPTY_PROFILE.role;
-    const check = (permission: Permission) => !loading && can(role, permission);
+    const resolvedRole = profile?.role ?? null;
+    // ตัดสินสิทธิ์ด้วย effectiveRole: ถ้ายังไม่ทราบจริงจะได้ 'viewer' (สิทธิ์น้อยสุด)
+    const role = effectiveRole(resolvedRole);
+    // ระหว่างโหลด หรือโหลดบทบาทไม่สำเร็จ ให้ปฏิเสธทุกอย่างก่อน (ไม่เดาเป็น viewer)
+    const check = (permission: Permission) => !loading && !error && can(role, permission);
 
     return {
       role,
+      resolvedRole,
       profile,
       user,
       loading,

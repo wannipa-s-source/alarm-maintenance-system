@@ -7,7 +7,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import NotificationBell from '@/components/NotificationBell';
 import UserBadge from '@/components/UserBadge';
 import LogoutButton from '@/components/LogoutButton';
-import ViewerNotice from '@/components/ViewerNotice';
+import RoleNotice from '@/components/RoleNotice';
 
 /** หน้าที่ไม่ต้องแสดงแถบเมนูด้านบน (หน้า Login) */
 const BARE_ROUTES = ['/login'];
@@ -55,8 +55,8 @@ export default function AppHeader() {
         </div>
       </header>
 
-      {/* แถบแจ้งเตือนสิทธิ์ Viewer: แสดงเฉพาะเมื่อเป็นผู้ชมและล็อกอินแล้ว */}
-      <ViewerNotice />
+      {/* แถบแจ้งสิทธิ์: แสดงข้อความตามบทบาทจริง (Admin / Technician / Viewer) */}
+      <RoleNotice />
 
       {/* แถบเมนูนำทาง: เชื่อมต่อทุกหน้าของระบบเข้าด้วยกัน */}
       <Navbar />

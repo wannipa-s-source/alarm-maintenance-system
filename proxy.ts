@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabaseConfig';
-import { canAccessRoute, normalizeRole } from '@/lib/permissions';
+import { canAccessRoute, effectiveRole } from '@/lib/permissions';
 
 /** เฉพาะหน้าเข้าสู่ระบบที่เข้าถึงได้โดยไม่ต้องล็อกอิน */
 const PUBLIC_ROUTES = ['/login'];
@@ -53,7 +53,8 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!canAccessRoute(pathname, normalizeRole(profile?.role))) {
+    // effectiveRole: ถ้าอ่านบทบาทไม่ได้จริง ให้ถือเป็น 'viewer' (สิทธิ์น้อยสุด = fail-closed)
+    if (!canAccessRoute(pathname, effectiveRole(profile?.role))) {
       const url = request.nextUrl.clone();
       url.pathname = '/';
       url.search = '';

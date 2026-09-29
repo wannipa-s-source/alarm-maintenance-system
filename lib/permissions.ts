@@ -58,18 +58,39 @@ export function can(role: UserRole, permission: Permission): boolean {
   return MATRIX[role].includes(permission);
 }
 
-/** แปลงค่าที่อ่านมาจากฐานข้อมูลให้เป็น UserRole เสมอ (กันค่าแปลกปลอม/ค่าว่าง) */
-export function normalizeRole(value: unknown): UserRole {
+/**
+ * แปลงค่าที่อ่านมาจากฐานข้อมูลให้เป็น UserRole
+ *
+ * คืน null เมื่อค่าไม่ถูกต้องหรือยังไม่มีข้อมูล เพื่อให้ชั้นบนรู้ว่า "ยังไม่ทราบบทบาท"
+ * แทนที่จะเดาเป็น viewer ทันที — การเดาผิดทำให้ผู้ใช้ที่เป็น admin/technician
+ * ถูกแสดงเป็นผู้ชม และทำให้สิทธิ์ที่มีอยู่จริงถูกมองเป็นไม่มี
+ */
+export function parseRole(value: unknown): UserRole | null {
   return typeof value === 'string' && (USER_ROLES as readonly string[]).includes(value)
     ? (value as UserRole)
-    : 'viewer';
+    : null;
+}
+
+/**
+ * บทบาทสำหรับ "การตัดสินใจว่าอนุญาตหรือไม่" เท่านั้น
+ *
+ * ถ้ายังไม่ทราบบทบาทจริง ให้ถือเป็นผู้ชม (viewer) ซึ่งมีสิทธิ์น้อยที่สุด
+ * นี่คือ fail-closed ที่ถูกต้องด้านความปลอดภัย — ห้ามเปลี่ยนเป็น admin
+ * เพราะจะทำให้ทุกคนกลายเป็นผู้ดูแลระบบเมื่อระบบพัง
+ */
+export function effectiveRole(value: unknown): UserRole {
+  return parseRole(value) ?? 'viewer';
 }
 
 export type RoleMeta = {
   /** ชื่อบทบาทที่แสดงผล (ภาษาไทย) */
   label: string;
+  /** ชื่อบทบาทแบบอังกฤษที่แสดงใน Header ตามสเปก */
+  title: string;
   /** คำอธิบายสิทธิ์สั้น ๆ */
   description: string;
+  /** ข้อความแจ้งสิทธิ์ในแถบ Header */
+  notice: string;
   /** สีของป้ายบทบาท */
   badge: string;
   /** สีจุดกลมบนป้าย */
@@ -79,19 +100,27 @@ export type RoleMeta = {
 export const ROLE_META: Record<UserRole, RoleMeta> = {
   admin: {
     label: 'ผู้ดูแลระบบ',
+    title: 'Admin',
     description: 'แก้ไขและลบข้อมูลได้ทั้งหมด รวมถึงจัดการสิทธิ์ผู้ใช้',
+    notice: 'คุณอยู่ในสิทธิ์ Admin — สามารถจัดการข้อมูลทั้งหมดของระบบได้',
     badge: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300',
     dot: 'bg-indigo-500',
   },
   technician: {
     label: 'ช่างซ่อมบำรุง',
+    title: 'Technician',
     description: 'ดูเครื่องจักรและ Dashboard, บันทึก/แก้ไข/เปลี่ยนสถานะงานซ่อมบำรุง และเปลี่ยนสถานะ Alarm ได้ (ลบข้อมูลไม่ได้)',
+    notice:
+      'คุณอยู่ในสิทธิ์ Technician — สามารถดูข้อมูลเครื่องจักร บันทึก/แก้ไข Maintenance เปลี่ยนสถานะ Alarm และดู Dashboard ได้',
     badge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300',
     dot: 'bg-cyan-500',
   },
   viewer: {
     label: 'ผู้ชม',
+    title: 'Viewer',
     description: 'อ่านข้อมูลอย่างเดียว แก้ไขหรือลบข้อมูลไม่ได้',
+    notice:
+      'คุณอยู่ในสิทธิ์ Viewer (อ่านอย่างเดียว) — สามารถดูข้อมูลได้ แต่ไม่สามารถเพิ่ม แก้ไข หรือลบข้อมูล',
     badge: 'bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-300',
     dot: 'bg-slate-500',
   },

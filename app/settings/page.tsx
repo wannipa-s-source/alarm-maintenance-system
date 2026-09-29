@@ -14,7 +14,6 @@ type ProfileRow = {
   role: UserRole;
   updated_at: string | null;
 };
-
 const field =
   'w-full bg-slate-50 dark:bg-[#0d1322] border border-slate-300 dark:border-slate-700/80 rounded-xl p-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition';
 
