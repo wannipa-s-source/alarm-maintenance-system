@@ -92,12 +92,12 @@ export default function NotificationBell() {
         onClick={toggle}
         aria-label="การแจ้งเตือน"
         aria-expanded={open}
-        className={`relative inline-flex items-center justify-center w-9 h-9 rounded-xl ${CONTROL.shape} ${CONTROL.default} hover:text-cyan-300`}
+        className={`relative inline-flex items-center justify-center w-9 h-9 rounded-xl ${CONTROL.shape} ${CONTROL.default} hover:text-cyan-600 dark:hover:text-cyan-300`}
       >
         {criticalCount > 0 ? (
           <>
             <BellDot className="w-4 h-4 text-rose-500" />
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-navy">
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-chrome">
               {criticalCount}
             </span>
           </>

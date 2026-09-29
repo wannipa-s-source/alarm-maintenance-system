@@ -30,13 +30,13 @@ export default function UserBadge() {
     (profile?.email ? shortenEmail(profile.email) : fallbackName);
 
   return (
-    <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-navy-raised">
+    <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-chrome-line">
       <div className="hidden sm:flex flex-col items-end leading-tight">
-        <span className="text-xs font-bold text-navy-text">{displayName}</span>
+        <span className="text-xs font-bold text-chrome-text">{displayName}</span>
 
         {loading ? (
           <span
-            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-navy-outline text-navy-muted text-[10px] font-bold"
+            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-chrome-outline text-chrome-muted text-[10px] font-bold"
             title="กำลังโหลดบทบาทจากฐานข้อมูล"
           >
             <LoaderCircle className="w-2.5 h-2.5 animate-spin" />
@@ -44,7 +44,7 @@ export default function UserBadge() {
           </span>
         ) : error || !resolvedRole ? (
           <span
-            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-amber-500 bg-amber-500 text-slate-900 text-[10px] font-bold"
+            className="inline-flex items-center gap-1.5 mt-0.5 px-1.5 py-0.5 rounded-md border border-amber-500 bg-amber-500 text-slate-900 dark:text-amber-950 text-[10px] font-bold"
             title={`อ่านบทบาทไม่สำเร็จ: ${error ?? 'ไม่พบข้อมูลโปรไฟล์'} — กรุณารันไฟล์ supabase/migrations/20260929000000_reconcile_rbac_schema.sql ใน Supabase SQL Editor`}
           >
             <TriangleAlert className="w-2.5 h-2.5" />
@@ -74,7 +74,7 @@ function RolePill({ role }: { role: NonNullable<ReturnType<typeof useRole>['reso
     >
       <span className={`w-1.5 h-1.5 rounded-full ${ui.dot}`} />
       {meta.title}
-      <span className="font-mono text-slate-200">({role})</span>
+      <span className="font-mono text-slate-700 dark:text-slate-200">({role})</span>
     </span>
   );
 }

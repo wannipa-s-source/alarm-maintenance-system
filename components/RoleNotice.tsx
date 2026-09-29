@@ -17,7 +17,7 @@ const NOTICE_STYLE: Record<UserRole, { icon: typeof Lock; bar: string }> = {
  *
  * หน้าตา: พื้นหลังเป็นสีทึบเต็มพื้นที่ตามสีประจำบทบาท (ROLE_UI) ไม่มีความโปร่งใส
  * ตัวอักษรและไอคอนเป็นสีขาวทั้งธีมสว่างและธีมมืด เพื่อให้อ่านได้ชัดบนพื้นเข้ม
- * เส้นคั่น/เงาบางมาก เพื่อให้เข้ากับแถบ Header และ Navigation Bar
+ * เส้นคั่น/เงาเป็นสีทึบที่เปลี่ยนตามโหมด (var(--role-line) / var(--role-shadow))
  *
  * แสดงเฉพาะเมื่อ (1) ล็อกอินแล้ว (2) โหลดบทบาทสำเร็จ (3) ทราบบทบาทแล้ว
  * เพื่อไม่ให้กระพริบขึ้นมาตอนยังโหลดข้อมูล หรือกรณีอ่านบทบาทไม่สำเร็จ
@@ -34,7 +34,7 @@ export default function RoleNotice() {
   return (
     <div
       role="status"
-      className={`flex items-center gap-2.5 w-full px-4 sm:px-6 py-2.5 border-b border-black/15 shadow-[0_1px_2px_rgba(2,6,23,0.35)] text-xs sm:text-sm font-medium text-white ${bar}`}
+      className={`flex items-center gap-2.5 w-full px-4 sm:px-6 py-2.5 border-b border-role-line shadow-[var(--role-shadow)] text-xs sm:text-sm font-medium text-white ${bar}`}
     >
       <Icon className="w-4 h-4 shrink-0 text-white" strokeWidth={2.25} />
       <span className="text-white">{notice}</span>

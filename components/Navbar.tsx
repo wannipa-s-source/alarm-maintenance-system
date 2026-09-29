@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { isActivePath, visibleNavItems } from '@/lib/navItems';
 import { useRole } from '@/context/RoleContext';
-import { BAR, MENU } from '@/lib/designSystem';
+import { BAR, CONTROL, MENU } from '@/lib/designSystem';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -44,7 +44,7 @@ export default function Navbar() {
 
         {/* ปุ่มเปิดเมนูสำหรับมือถือ */}
         <div className="flex md:hidden items-center justify-between py-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-navy-muted">
+          <span className="text-xs font-bold uppercase tracking-wider text-chrome-muted">
             เมนูระบบ
           </span>
           <button
@@ -52,7 +52,7 @@ export default function Navbar() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? 'ปิดเมนู' : 'เปิดเมนู'}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-navy-raised border border-navy-outline text-navy-text text-sm font-semibold hover:bg-navy-outline transition-colors"
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${CONTROL.default}`}
           >
             {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             <span>{open ? 'ปิด' : 'เมนู'}</span>
@@ -73,9 +73,7 @@ export default function Navbar() {
                     onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={`${MENU.shapeMobile} ${
-                      active
-                        ? `${MENU.active} border border-brand-hover`
-                        : 'bg-navy-raised border border-navy-outline text-navy-text hover:bg-navy-outline'
+                      active ? `${MENU.active} border border-brand-hover` : MENU.mobileIdle
                     }`}
                   >
                     <Icon className="w-5 h-5 shrink-0" />

@@ -4,6 +4,38 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* ------------------------------------------------------------
+     Design System ของ "โครงหน้าเว็บ" (Header / Navigation Bar / Role Notice)
+     ประกาศเป็น CSS variable 2 ชุด (light / dark) แล้วผูกเข้ากับ @theme inline
+     ดังนั้นคลาสเดียว (เช่น bg-chrome) จะเปลี่ยนสีอัตโนมัติเมื่อผู้ใช้สลับโหมด
+     ทุกค่าเป็นสีทึบ (solid) ไม่มีความโปร่งใส ไม่มี gradient
+     ------------------------------------------------------------ */
+
+  /* โหมดสว่าง */
+  --chrome: #ffffff; /* พื้นแถบ Header + แถบเมนู */
+  --chrome-raised: #f1f5f9; /* พื้นปุ่มย่อย / hover ของเมนูที่ยังไม่เลือก */
+  --chrome-outline: #cbd5e1; /* เส้นขอบปุ่มบนแถบ */
+  --chrome-line: #e2e8f0; /* เส้นคั่นระหว่างแถบ */
+  --chrome-text: #0f172a; /* ตัวอักษรหลักบนแถบ */
+  --chrome-muted: #64748b; /* ตัวอักษรรองบนแถบ */
+  --chrome-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  --role-shadow: 0 1px 2px rgb(15 23 42 / 0.18);
+  --role-line: rgb(15 23 42 / 0.15);
+}
+
+/* โหมดมืด — next-themes ใส่คลาส "dark" บน <html> (ดู app/providers.tsx)
+   ใช้ :root.dark เพื่อให้มีความสำคัญสูงกว่า :root เสมอ ไม่ขึ้นกับลำดับในไฟล์ CSS */
+:root.dark {
+  --chrome: #0f172a; /* Navy */
+  --chrome-raised: #1e293b;
+  --chrome-outline: #334155;
+  --chrome-line: #1e293b;
+  --chrome-text: #f8fafc;
+  --chrome-muted: #94a3b8;
+  --chrome-shadow: 0 1px 2px rgb(2 6 23 / 0.6);
+  --role-shadow: 0 1px 2px rgb(2 6 23 / 0.45);
+  --role-line: rgb(255 255 255 / 0.14);
 }
 
 @theme inline {
@@ -11,21 +43,22 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* สี "โครงหน้าเว็บ" — เปลี่ยนตามโหมดอัตโนมัติ (ดูชุดค่าใน :root / .dark ด้านบน) */
+  --color-chrome: var(--chrome);
+  --color-chrome-raised: var(--chrome-raised);
+  --color-chrome-outline: var(--chrome-outline);
+  --color-chrome-line: var(--chrome-line);
+  --color-chrome-text: var(--chrome-text);
+  --color-chrome-muted: var(--chrome-muted);
+  --color-role-line: var(--role-line);
 }
 
-/*
-  Design System ของ "โครงหน้าเว็บ" (Header / Navigation Bar / Role Notice)
-  โทน Navy + Blue + สีประจำ Role — ทุกค่าเป็นสีทึบ ไม่มีความโปร่งใส
-  ใช้ผ่านคลาส เช่น bg-navy, border-navy-raised, bg-brand, bg-role-admin
-*/
 @theme {
-  /* Navy — พื้นแถบด้านบนและแถบเมนู */
+  /* Navy — โทนหลักของโหมดมืด */
   --color-navy: #0f172a;
-  /* พื้นยกขึ้น / hover บนแถบเข้ม และเส้นคั่นระหว่างแถบ */
   --color-navy-raised: #1e293b;
-  /* เส้นขอบของปุ่มบนแถบเข้ม */
   --color-navy-outline: #334155;
-  /* ตัวอักษรบนแถบเข้ม */
   --color-navy-text: #f8fafc;
   --color-navy-muted: #94a3b8;
 
